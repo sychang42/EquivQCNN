@@ -85,7 +85,7 @@ class U_SO4(qml.operation.Operation):
         return op_list
     
     
-class Pooling_ansatz1(qml.operation.Operation):
+class Pooling_ansatz(qml.operation.Operation):
     num_wires = 2
     num_params = 2 # Number of trainable parameters.
 

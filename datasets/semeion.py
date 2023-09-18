@@ -1,3 +1,10 @@
+"""
+Semeion handwritten digit dataset.  
+
+Source : 
+Semeion Handwritten Digit. (2008). UCI Machine Learning Repository. https://doi.org/10.24432/C5SC8V.
+
+"""
 import os
 import sys 
 sys.path.append(os.path.dirname(__file__)) 
@@ -30,7 +37,8 @@ class Semeion(torch.utils.data.Dataset):
         self._load_data()
 
     def _load_data(self):
-        """Loads the data from the passed root directory. Splits in test/train based on seed. By default resized to 256,256
+        """
+        Loads the data from the dataset root directory and splits in train and test dataset based on seed. 
         """
         fname = os.path.join(self.root_dir, "semeion/semeion.data")
         file = open(fname, 'r')
@@ -91,9 +99,7 @@ class Semeion(torch.utils.data.Dataset):
             idx = idx.tolist()
 
         img = self.data[idx]
-        
-        # doing this so that it is consistent with all other datasets
-        # to return a PIL Image
+
         img = Image.fromarray(img)
 
         if self.transform:

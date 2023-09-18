@@ -3,15 +3,18 @@ Run Autoencoder
 """
 
 import os 
+import sys 
+sys.path.append(os.path.dirname(__file__)) 
+
 import yaml 
 import argparse
 
-from dataset import *
+from datasets.dataset import get_data
 from utils import *
 
 from models.train import train_model
 
-import jax
+import jax.numpy as jnp
 from jax.config import config
 config.update("jax_enable_x64", True)
 
@@ -76,9 +79,7 @@ if __name__ == "__main__":
     n_data = len(X_train) 
     if 'n_data' in config['dataset_params'] and config['dataset_params']['n_data'] is not None : 
         n_data = config['dataset_params']['n_data']
-        
-#     train_ds = {"image": X_train, "label" : jax.nn.one_hot(Y_train, num_classes)} 
-#     test_ds = {"image": X_test, "label" : jax.nn.one_hot(Y_test, num_classes)} 
+    
     train_ds = {"image": X_train[:n_data], "label" :Y_train[:n_data]} 
     test_ds = {"image": X_test, "label" : Y_test} 
     

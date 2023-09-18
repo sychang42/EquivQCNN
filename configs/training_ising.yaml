@@ -15,7 +15,7 @@ model_params:
   equiv: False
   trans_inv : True
   hybrid: False
-  ver: U_5
+  ver: U_SO4
   delta: 0.1
   
 opt_params: 
@@ -24,4 +24,4 @@ opt_params:
   b2: 0.999
 
 logging_params: 
-  save_dir: ../Result/Ising/scan_n_data/best_hyper/U_5
+  save_dir: ../Result/Ising/scan_n_data/best_hyper/U_SO4

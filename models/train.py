@@ -9,7 +9,7 @@ import numpy as np
 from metrics import get_metrics 
 
 
-from typing import Tuple, Optional, List, Dict, Any
+from typing import Tuple, Optional, Dict, Any
 
 import csv
 from tqdm import tqdm
@@ -98,7 +98,7 @@ def validate(x_batch: jnp.ndarray,
         losses (Dict[str, float]) : Dictionary of losses computed on x_batch, y_batch. 
         preds (jnp.ndarray) : Predicted Labels of shape (batch_size, ).
     """
-    
+
     class_outputs = model_state.apply_fn(
                 {'params': model_state.params}, x_batch)
         

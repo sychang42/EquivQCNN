@@ -138,7 +138,7 @@ class QCNN() :
 class EquivQCNN() : 
     _valid_gates = {
         "U2" : equiv_unitary.equiv_U2, 
-        "U4_ver1" : equiv_unitary.equiv_U4,
+        "U4" : equiv_unitary.equiv_U4,
         "equiv_Pooling_ansatz" : equiv_unitary.Pooling_ansatz,
     } 
     _valid_gates.update(QCNN._valid_gates) 
@@ -221,10 +221,8 @@ class EquivQCNN() :
         
 #         Symmetry breaking
         if self._sym_break: 
-            print("Symmetry breaking")
             self._num_params += 1
         
-        print(self._num_params) 
     @staticmethod
     def _choose_gate(gate_str : str) : 
         gate = EquivQCNN._valid_gates.get(gate_str, None) 

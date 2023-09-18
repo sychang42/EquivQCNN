@@ -1,4 +1,7 @@
-# Utility methods for classifier training with different classifiers.
+"""
+Utility methods for classifier training with different classifiers.
+"""
+
 import sys
 import os 
 sys.path.append(os.path.dirname(__file__)) 
@@ -8,17 +11,14 @@ import flax.linen as nn
 from flax.training.train_state import TrainState
 
 import jax.numpy as jnp
-import numpy as np
 
 import optax 
 
-import pennylane as qml 
 from qcnn_classifier import QCNNClassifier
 from circuits.quantum_circuit import get_quantum_circuit
 
 from typing import Optional, Tuple, Dict, Union, List, Callable
 
-import pandas as pd 
 
 PRNGKey = jnp.ndarray 
         
@@ -34,7 +34,6 @@ def choose_model(model_type : str,
     """
     model_cls = None
     if model_type == "quantum_classifier" : 
-        print(model_type) 
                    
         kwargs = {} 
         if "ver" in model_args.keys() : 
@@ -85,9 +84,9 @@ def create_state(rng : PRNGKey,
         opt_args = {"lr" : 0.001, "b1" : 0.7, "b2" : 0.999}
 
     model = model_cls(**input_args)
-#     tx = optax.sgd(opt_args['lr'])
     tx = optax.adam(opt_args['lr'], b1=opt_args['b1'], b2=opt_args['b2'])
 #     tx = optax.amsgrad(opt_args['lr'], b1=opt_args['b1'], b2=opt_args['b2'])
+
     # In case we add regularization
     if "weight_decay" in opt_args.keys() :
          tx = optax.adamw(opt_args['lr'], b1=opt_args['b1'], b2=opt_args['b2'], weight_decay = opt_args['weight_decay'])
@@ -138,12 +137,10 @@ def print_losses(epoch : int,
     print(
             f"Epoch : {epoch + 1}/{epochs}, Train loss (average) = "
             f", ".join("{}: {}".format(k, v) for k, v in train_loss.items())
-#             f"Train loss (average) = {train_loss.items():.8f}"
         )
     print(
         f"Epoch : {epoch + 1}/{epochs}, Valid loss = "
         f", ".join("{}: {}".format(k, v) for k, v in valid_loss.items())
-#         f"Valid loss = {valid_loss.items():.8f}"
     )
         
 
