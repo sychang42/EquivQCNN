@@ -1,10 +1,10 @@
 """
-Image preprocessing
+Load Classical image datasets.
+Ising, MNIST, FashionMNIST, EMNIST, EuroSAT, Semeion dataset implemented. 
 """
 
 import os
 import sys
-import pandas as pd
 sys.path.append(os.path.dirname(__file__)) 
 
 from sklearn.utils import shuffle 
@@ -22,7 +22,7 @@ from typing import Tuple, List, Union
 import pickle
 from sklearn.model_selection import train_test_split
 
-from eurosat import EuroSAT
+from eurosat import EuroSAT, random_split
 from semeion import Semeion
 
 def load_ising_data(root, L):  
@@ -149,8 +149,6 @@ def get_data(data: str,
         data = np.expand_dims(data.astype(np.float32), 3)
 
         X_train, Y_train, X_test, Y_test = prepare_ising_data(data, labels)
-#     elif data == "semeion" :  
-#         X_train, Y_train, X_test, Y_test = read_data_semeion(load_dir, classes)
     else : 
         switcher = {
             "MNIST" : torchvision.datasets.MNIST, 

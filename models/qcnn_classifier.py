@@ -2,12 +2,10 @@ import sys
 import os 
 sys.path.append(os.path.dirname(__file__)) 
 
-import numpy as np
 
 import jax 
 import jax.numpy as jnp 
 
-import flax 
 import flax.linen as nn 
 from flax.training.train_state import TrainState 
 
@@ -32,7 +30,7 @@ class QCNNClassifier(nn.Module):
     equiv: bool
     delta: float
     hybrid: bool
-    
+        
     def init_params(self, 
                     rng: PRNGKey, 
                     num_qparams: int) -> jnp.ndarray : 
@@ -49,39 +47,36 @@ class QCNNClassifier(nn.Module):
             params (jnp.ndarray) : Initial parameters 
             
         """ 
+
+        # Uniform initialization of initial weights
         return jax.random.uniform(rng, (num_qparams, ), minval = -self.delta, maxval = self.delta)
 #         return jax.random.normal(rng, (num_qparams, ))*self.delta
     
     @nn.compact
     def __call__(self,  
              X_batch: jnp.ndarray) -> jnp.ndarray:      
-                
+        """
+        Forward function to return classifier output
+        
+        Args : 
+            X_batch (jnp.ndarray) : Classical input data of shape (batch_size, img_size[0], img_size[1], img_size[2])
+        
+        Return : 
+            class_outputs (jnp.ndarray) : Quantum Classifier output of shape (batch_size, ceil(log2(n_class)))
+            
+        """         
         qparams = self.param('qparams', self.init_params, self.num_params)
         
-#         if self.sym_break > 0: 
-#             sym_break_terms = self.param("epsilon", self, init_params, self.sym_break) 
-#         if self.equiv : 
-#             classifier_vmap = jax.vmap(lambda z : jnp.sum(self.circuit(z, qparams), axis = 0)/2.) 
-#         else : 
-#         classifier_vmap = jax.vmap(lambda z : self.circuit(z, qparams)) 
-        
         if self.equiv : 
-#             classifier_vmap = jax.vmap(lambda z : jnp.sum(self.circuit(z, qparams), axis = 0)/2.) 
-#             class_outputs = classifier_vmap(X_batch) 
-            cvmap1 = jax.vmap(lambda z : self.circuit[0](z, qparams))  
-            cvmap2 = jax.vmap(lambda z : self.circuit[1](z, qparams)) 
-        
-#             class_outputs = jnp.concatenate([cvmap1(X_batch[:len(X_batch)//2]), cvmap2(X_batch[len(X_batch)//2:])])
-            class_outputs = (cvmap1(X_batch) + cvmap2(X_batch))/2.
+            classifier_vmap = jax.vmap(lambda z : jnp.sum(self.circuit(z, qparams), axis = 0)/2.) 
         else : 
             classifier_vmap = jax.vmap(lambda z : self.circuit(z, qparams)) 
-            class_outputs = classifier_vmap(X_batch) 
             
+        class_outputs = classifier_vmap(X_batch) 
         if self.hybrid : 
             class_outputs = nn.Dense(features = 2)(class_outputs)
             class_outputs = nn.softmax(class_outputs)
-        
-        
+            
         return class_outputs
 
     

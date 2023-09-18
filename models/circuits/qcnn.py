@@ -12,19 +12,14 @@ import unitary
 import equiv_unitary
 from math import ceil
 
+from typing import Tuple, Callable
+
 class QCNN() : 
     _valid_gates = {
         "RZ" : qml.RZ,
         "U_TTN" : unitary.U_TTN,
-        "U_5" : unitary.U_5,
-        "U_6" : unitary.U_6,
-        "U_9" : unitary.U_9,
-        "U_13" : unitary.U_13,
-        "U_14" : unitary.U_14,
-        "U_15" : unitary.U_15,
         "U_SO4" : unitary.U_SO4,
-        "U_SU4" : unitary.U_SU4,
-        "Pooling_ansatz1" : unitary.Pooling_ansatz1
+        "Pooling_ansatz" : unitary.Pooling_ansatz
     } 
     
     qnn_config_path = os.path.join(os.path.dirname(__file__), "qnn_architecture.json")
@@ -35,7 +30,7 @@ class QCNN() :
                  num_measured: int,
                  trans_inv: bool = True,
                  **kwargs
-                ) : 
+                ) -> None : 
         
         qnn_architecture = {'conv_filters' : ['U_TTN'],
                             'pooling' : 'Pooling_ansatz1'} 
@@ -70,7 +65,7 @@ class QCNN() :
         
     
     @staticmethod
-    def _choose_gate(gate_str : str) : 
+    def _choose_gate(gate_str : str) -> Tuple[str, qml.operation.Operation, int, int] : 
         gate = QCNN._valid_gates.get(gate_str, None) 
         
         if gate is None : 
@@ -79,7 +74,11 @@ class QCNN() :
         return (gate_str, gate, gate.num_params, gate.num_wires)
                             
         
-    def _get_circuit(self, num_qubits, num_measured, conv_filters, pooling) : 
+    def _get_circuit(self, 
+                     num_qubits: int,
+                     num_measured : int,
+                     conv_filters, 
+                     pooling) : 
 
         def circuit(params) : 
             idx = 0
@@ -98,11 +97,7 @@ class QCNN() :
                     idx = idx + num_params
                     
                 _, gate, num_params, gate_num_wires = pooling
-#                 for i in range(0, len(wires), 2) : 
-#                     gate(*params[idx : idx + num_params], wires = [wires[i], wires[i+1]]) 
-#                 idx = idx + num_params    
-#                 wires = np.array([wires[i] for i in range(0, len(wires), 2)]) 
-                        
+
                 traced_out_wires = []
         
                 if len(wires) > 2 : 
@@ -126,7 +121,7 @@ class QCNN() :
                 
         return circuit
     
-    def get_circuit(self) :
+    def get_circuit(self) -> Tuple[Callable, int]:
                 
         return self._get_circuit(self._num_qubits, self._num_measured, self._conv_filters,
                                  self._pooling), self._meas_wires
@@ -142,15 +137,9 @@ class QCNN() :
     
 class EquivQCNN() : 
     _valid_gates = {
-        "U2_ver1" : equiv_unitary.U2_ver1,
-        "U2_ver1_2" : equiv_unitary.U2_ver1_2,
-        "U2_ver1_3" : equiv_unitary.U2_ver1_3,
-        "U2_ver2" : equiv_unitary.U2_ver2,
-        "U2_ver3" : equiv_unitary.U2_ver3,
-        "U4_ver1" : equiv_unitary.U4_ver1,
-        "equiv_Pooling_ansatz1" : equiv_unitary.Pooling_ansatz1,
-        "equiv_Pooling_ansatz2" : equiv_unitary.Pooling_ansatz2, 
-        "equiv_Pooling_ansatz4" : equiv_unitary.Pooling_ansatz4
+        "U2" : equiv_unitary.equiv_U2, 
+        "U4_ver1" : equiv_unitary.equiv_U4,
+        "equiv_Pooling_ansatz" : equiv_unitary.Pooling_ansatz,
     } 
     _valid_gates.update(QCNN._valid_gates) 
     
@@ -174,6 +163,13 @@ class EquivQCNN() :
             for k in kwargs.keys() : 
                 qnn_architecture[k] = kwargs[k]
          
+        print(kwargs.keys())
+        
+        if "sym_break" in kwargs.keys() : 
+            self._sym_break = kwargs['sym_break'] 
+        else : 
+            self._sym_break = False
+            
         self._qnn_architecture = qnn_architecture
         self._num_qubits = num_qubits
         self._num_measured = num_measured
@@ -213,7 +209,7 @@ class EquivQCNN() :
 
         if not self._alternating :  
             self._num_params = num_gates*(sum([gate[2] for gate in self._U2_conv_filters]) + \
-                                        (1+depth)*(sum([gate[2] for gate in self._U4_conv_filters]) + \
+                                        depth*(sum([gate[2] for gate in self._U4_conv_filters]) + \
                                                sum([gate[2] for gate in self._noisy_filters]) + \
                                                self._pooling[2]))  
         else : 
@@ -223,8 +219,12 @@ class EquivQCNN() :
                                                 self._pooling[2])
             
         
-        # Symmetry breaking
-#         self._num_params += 4
+#         Symmetry breaking
+        if self._sym_break: 
+            print("Symmetry breaking")
+            self._num_params += 1
+        
+        print(self._num_params) 
     @staticmethod
     def _choose_gate(gate_str : str) : 
         gate = EquivQCNN._valid_gates.get(gate_str, None) 
@@ -262,7 +262,7 @@ class EquivQCNN() :
             gate(*params[idx], wires = [wires[0], wires[1], wires[-2], wires[-1]])
                                           
                                                      
-    def _get_circuit(self, num_qubits, num_measured, U2_conv_filters, U4_conv_filters, pooling, noisy_filters, alternating, trans_inv) : 
+    def _get_circuit(self, num_qubits, num_measured, U2_conv_filters, U4_conv_filters, pooling, noisy_filters, alternating, trans_inv, sym_break) : 
 
         def circuit(params) : 
             idx = 0
@@ -331,7 +331,6 @@ class EquivQCNN() :
                                           
                 _, gate, num_params, gate_num_wires = pooling
                 num_gates = len(wires)//4
-                
                 if trans_inv : 
                     conv_params = jnp.repeat(jnp.array([params[idx : idx + num_params]]), num_gates, axis = 0)  
                     num_gates = 1 
@@ -343,37 +342,24 @@ class EquivQCNN() :
                 for i in range(0, len(wires)//2 -1, 2) : 
                     gate(*conv_params[i//2], wires = [wires[i], wires[i+1]]) 
                     traced_out_wires.append(i+1) 
-                    
                 for i in range(len(wires)//2, len(wires) -1, 2) : 
-                    gate(*conv_params[i//2], wires = [wires[i], wires[i+1]]) 
+                    gate(*conv_params[(i-len(wires)//2)//2], wires = [wires[i], wires[i+1]]) 
                     traced_out_wires.append(i+1) 
                     
                 idx = idx + num_params*num_gates
                 
                 
-#                 wires = np.array([wires[i] for i in range(0, len(wires), 2)]) 
-                            
+                
                 wires = np.delete(wires, traced_out_wires) 
-            
-            for _, gate, num_params, gate_num_wires in noisy_filters : 
-                num_gates = len(wires)
-                
-                if trans_inv : 
-                    conv_params = jnp.repeat(jnp.array([params[idx : idx + num_params]]), num_gates, axis = 0)   
-                    num_gates = 1
-                else : 
-                    conv_params = params[idx : idx + num_gates*num_params].reshape((num_gates, num_params))  
-
-                self._U2_conv(conv_params, gate, wires)
-
-                idx = idx + num_gates*num_params
-                
+            if sym_break: 
+                for i in wires : 
+                    qml.RZ(params[-1], wires = i) 
         return circuit
     
     def get_circuit(self) :
                 
         return self._get_circuit(self._num_qubits, self._num_measured, self._U2_conv_filters, self._U4_conv_filters,
-                                 self._pooling, self._noisy_filters, self._alternating, self._trans_inv), self._meas_wires
+                                 self._pooling, self._noisy_filters, self._alternating, self._trans_inv, self._sym_break), self._meas_wires
     
     def __str__(self) : 
         disp = f"Quantum Convolutional Neural Network with architecture :\n" 

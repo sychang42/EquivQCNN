@@ -11,18 +11,17 @@ import pennylane as qml
 import numpy as np
 
 import jax 
-from jax import numpy as jnp 
 
-from typing import Tuple, Callable, Optional, List, Any, Dict, Union
+from typing import Tuple, Callable, Optional
 
 from qcnn import *
 from data_embedding import * 
 
 def get_quantum_circuit(num_qubits : int, 
                          num_measured : int, 
-                          qnn_config : Union[str, Dict[str, Any]], 
                           equiv : Optional[bool] = False,
-                         trans_inv: Optional[bool] = True,
+                         trans_inv: Optional[bool] = True, 
+                        **kwargs
                          ) -> Tuple[Callable, int]:
     """
     
@@ -38,83 +37,34 @@ def get_quantum_circuit(num_qubits : int,
     """
     
     if equiv: 
-        qcnn = EquivQCNN(num_qubits, num_measured, trans_inv, **qnn_config)     
+        qcnn = EquivQCNN(num_qubits, num_measured, trans_inv, **kwargs)     
     else : 
-        qcnn = QCNN(num_qubits, num_measured, trans_inv, **qnn_config) 
+        qcnn = QCNN(num_qubits, num_measured, trans_inv, **kwargs) 
     
     #Load quantum circuit
     qcnn_circuit, meas_wires = qcnn.get_circuit() 
     
     dev = qml.device("default.qubit", wires = num_qubits) 
     
-    # In case we use style-based architecture
+    
     if equiv : 
-#         @jax.jit 
-#         @qml.qnode(dev, interface = "jax") 
-#         def circuit(X, params) : 
-            
-#             embed_image(X, np.array([i for i in range(num_qubits)])) 
-#             qcnn_circuit(params)
-            
-#             qml.CRX(params[-1], wires = meas_wires) 
-#             qml.PauliX(meas_wires[0]) 
-#             qml.CRZ(params[-2], wires = meas_wires) 
-#             qml.Hadamard(wires = meas_wires[1])
-                    
-#             qml.CNOT(wires = [meas_wires[1], num_qubits]) 
-            
-#             qml.CRZ(-params[-2], wires = meas_wires)
-#             qml.PauliX(meas_wires[0]) 
-#             qml.CRX(-params[-1], wires = meas_wires) 
-            
-#             qml.CRX(params[-1], wires = [meas_wires[1], meas_wires[0]]) 
-#             qml.PauliX(meas_wires[1]) 
-#             qml.CRZ(params[-2], wires = [meas_wires[1], meas_wires[0]]) 
-#             qml.Hadamard(wires = meas_wires[0])
-            
-            
-#             qml.CNOT(wires = [meas_wires[0], num_qubits + 1])  
-            
-#             return qml.probs(wires = num_qubits), qml.probs(wires = num_qubits + 1) 
-            
-# #             return qml.probs(wires = num_qubits)
-# #             return qml.probs(wires = meas_wires) 
-#         return circuit, qcnn._num_params 
+        # Use Equivariant QCNN
         @jax.jit 
         @qml.qnode(dev, interface = "jax") 
-        def circuit1(X, params) : 
+        def circuit(X, params) : 
             
             embed_image(X, np.array([i for i in range(num_qubits)])) 
             qcnn_circuit(params)
-            qml.CRX(params[-1], wires = meas_wires) 
-            qml.PauliX(meas_wires[0]) 
-            qml.CRZ(params[-2], wires = meas_wires) 
-            qml.Hadamard(wires = meas_wires[1])
-            return qml.probs(wires = meas_wires[1])
-        
-        @jax.jit 
-        @qml.qnode(dev, interface = "jax") 
-        def circuit2(X, params) : 
-            
-            embed_image(X, np.array([i for i in range(num_qubits)])) 
-            qcnn_circuit(params)
-            qml.CRX(params[-1], wires = [meas_wires[1], meas_wires[0]]) 
-            qml.PauliX(meas_wires[1]) 
-            qml.CRZ(params[-2], wires = [meas_wires[1], meas_wires[0]]) 
-            
-            qml.Hadamard(wires = meas_wires[0])
-            return qml.probs(wires = meas_wires[0])
-#             return qml.probs(wires = meas_wires) 
-        return (circuit1, circuit2), qcnn._num_params 
+            for i in meas_wires : 
+                qml.Hadamard(i)
+            return qml.probs(wires = meas_wires[:len(meas_wires)//2]), qml.probs(wires = meas_wires[len(meas_wires)//2:])
 
+        return circuit, qcnn._num_params 
     else : 
         @jax.jit 
         @qml.qnode(dev, interface = "jax") 
         def circuit(X, params) : 
             embed_image(X, np.array([i for i in range(num_qubits)])) 
-            
-            
-            
             qcnn_circuit(params)
             
             return qml.probs(wires = meas_wires) 

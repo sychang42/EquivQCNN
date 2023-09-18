@@ -3,21 +3,18 @@ import sys
 import os 
 sys.path.append(os.path.dirname(__file__)) 
 
-import gc
 
-import flax
 import flax.linen as nn
 from flax.training.train_state import TrainState
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 
 import optax 
 
 import pennylane as qml 
-from qcnn_classifier_ver0 import QCNNClassifier
-from circuits_ver0.quantum_circuit import get_quantum_circuit
+from qcnn_classifier import QCNNClassifier
+from circuits.quantum_circuit import get_quantum_circuit
 
 from typing import Optional, Tuple, Dict, Union, List, Callable
 

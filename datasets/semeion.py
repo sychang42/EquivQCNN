@@ -4,7 +4,6 @@ sys.path.append(os.path.dirname(__file__))
 
 import numpy as np
 import torch
-from tqdm import tqdm
 from random import shuffle
 from PIL import Image
 

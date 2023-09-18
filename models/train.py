@@ -9,7 +9,7 @@ import numpy as np
 from metrics import get_metrics 
 
 
-from typing import Tuple, Optional, List, Dict
+from typing import Tuple, Optional, List, Dict, Any
 
 import csv
 from tqdm import tqdm
@@ -20,8 +20,20 @@ from .utils import *
 from functools import partial
 
 @jax.jit
-def compute_metrics(pred, labels):
+def compute_metrics(pred : jnp.ndarray, 
+                    labels: jnp.ndarray
+                    ) -> Tuple[float, Dict[str, float]]:
     """ 
+    Compute training metrics (Only BCE loss and accuracy implemented for the moment)
+
+    Args: 
+        pred (jnp.ndarray) : Classifier outputs 
+        labels (jnp.ndarray) : Data labels (Ground truth)
+
+    Return : 
+        loss (float) : The total loss, with respect to which we take the gradient
+        losses (Dict[str, float]) : Dictionary of each losses 
+
     """
     loss_type = ['BCE_loss', 'accuracy']
     
@@ -40,8 +52,20 @@ def compute_metrics(pred, labels):
 def train_batch(x_batch : jnp.ndarray,
                 y_batch : jnp.ndarray,
                model_state: TrainState, 
-               ) -> Tuple[TrainState, Dict]:
-    
+               ) -> Tuple[TrainState, Dict[str, float], jnp.ndarray]:
+    """
+    Train the model on a single batch. 
+
+    Args : 
+        x_batch (jnp.ndarray) : Classical input data of shape (batch_size, img_size[0], img_size[1], img_size[2]).
+        y_batch (jnp.ndarray) : Input data labels of shape (batch_size, ). 
+        model_state (TrainState) : Quantum Classifier model train state.
+
+    Return : 
+        new_model_state (TrainState) : Updated model train state. 
+        losses (Dict[str, float]) : Dictionary of losses computed on x_batch, y_batch. 
+        class_outputs (jnp.ndarray) : Quantum Classifier outputs. 
+    """
     def loss_fn(params) : 
         class_outputs = model_state.apply_fn(
                 {'params': params}, x_batch)
@@ -62,6 +86,18 @@ def train_batch(x_batch : jnp.ndarray,
 def validate(x_batch: jnp.ndarray, 
              y_batch: jnp.ndarray, 
             model_state : TrainState) -> Tuple[Dict, jnp.ndarray]:
+    """
+    Validate the model on a single batch. 
+
+    Args : 
+        x_batch (jnp.ndarray) : Classical input data of shape (batch_size, img_size[0], img_size[1], img_size[2]).
+        y_batch (jnp.ndarray) : Input data labels of shape (batch_size, ). 
+        model_state (TrainState) : Quantum Classifier model train state (Not trained). 
+ 
+    Return : 
+        losses (Dict[str, float]) : Dictionary of losses computed on x_batch, y_batch. 
+        preds (jnp.ndarray) : Predicted Labels of shape (batch_size, ).
+    """
     
     class_outputs = model_state.apply_fn(
                 {'params': model_state.params}, x_batch)
@@ -74,25 +110,25 @@ def validate(x_batch: jnp.ndarray,
     return losses, preds
 
 
-def train_model(train_ds : jnp.ndarray,
-               test_ds : jnp.ndarray,
-                train_args : Dict,
-                model_args : Dict, 
-                opt_args : Dict, 
+def train_model(train_ds : Dict[str, jnp.ndarray],
+               test_ds : Dict[str, jnp.ndarray],
+                train_args : Dict[str, Any],
+                model_args : Dict[str, Any], 
+                opt_args : Dict[str, Any], 
                 seed : int, 
                 snapshot_dir : Optional[str] = None) -> None :
+    """
+    Train the quantum classifier model.
+
     
+    """
+
     epochs = train_args['num_epochs']
     batch_size = train_args['batchsize'] 
     loss_type = train_args['loss_type']
     
-    print(train_ds['image'].shape) 
-    print(test_ds['image'].shape)     
     # Image shape    
-    im_shape = train_ds['image'].shape
-    label_shape = train_ds['label'].shape
-    
-    
+    im_shape = train_ds['image'].shape    
     
     key = jax.random.PRNGKey(seed=seed)
     key, init_key = jax.random.split(key)
@@ -139,7 +175,7 @@ def train_model(train_ds : jnp.ndarray,
                 batch_data = {k : train_ds[k][perms[b]] for k in train_ds.keys()} 
                         
                 # Update Model. 
-                model_state, loss,class_outputs = train_batch(batch_data['image'], batch_data['label'], model_state)        
+                model_state, loss, class_outputs = train_batch(batch_data['image'], batch_data['label'], model_state)        
                 for k,v in loss.items() : 
                     train_loss_epoch[k].append(v)
 
