@@ -1,0 +1,28 @@
+dataset_params: 
+  data: semeion
+  classes: [4,5]
+  img_size: 16
+  n_data: Null
+  
+training_params:
+  num_epochs: 100
+  batchsize: 20
+  loss_type: [BCE_loss, accuracy]
+  
+model_params:  
+  model_type: quantum_classifier
+  num_wires: 8
+  equiv: False
+  trans_inv : True
+  hybrid: False
+  ver: U_6
+  delta: 0.1
+  
+
+opt_params: 
+  lr: 0.1
+  b1: 0.9
+  b2: 0.999
+  
+logging_params: 
+  save_dir: ../Result/semeion/binary_scan/hyper1/U_6/

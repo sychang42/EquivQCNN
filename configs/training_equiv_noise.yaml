@@ -1,0 +1,31 @@
+dataset_params: 
+  data: MNIST
+  classes: [4, 5]
+  img_size: 16
+  
+training_params:
+  num_epochs: 100
+  n_data: Null
+  batchsize: 128
+  loss_type: [BCE_loss, accuracy]
+  
+model_params:  
+  model_type: quantum_classifier
+  num_wires: 8
+  trans_inv : True
+  equiv: True
+  hybrid: False
+  ver: ver1_noisy_equiv
+  delta: 0.1
+  noise_params: 
+    shots: 100
+    noise_type: DepolarizingChannel
+    noise_val: 0.01
+    
+opt_params: 
+  lr: 0.01
+  b1: 0.5
+  b2: 0.999
+  
+logging_params: 
+  save_dir: ../Result/EuroSAT/scan_hyper/noisy_equiv_ver0_RZ

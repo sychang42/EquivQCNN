@@ -1,0 +1,16 @@
+{   
+    "ver1_equiv" : {
+        "U2_conv_filters" : ["U2_ver1"],
+        "U4_conv_filters" : ["U4_ver1"],
+        "pooling" : "equiv_Pooling_ansatz2", 
+        "alternating" : false
+    }, 
+    "ver1_noisy_equiv" : {
+        "U2_conv_filters" : ["U2_ver1"],
+        "U4_conv_filters" : [],
+        "noisy_filters" : ["U2_ver1"], 
+        "pooling" : "Pooling_ansatz1", 
+        "alternating" : false
+    }
+} 
+
