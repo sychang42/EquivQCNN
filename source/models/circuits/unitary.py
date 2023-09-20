@@ -1,6 +1,10 @@
 """
 This module contains the set of unitary circuit ansatz used to benchmark the performances of 
-non-equivariant Quantum Convolutional Neural Network (QCNN) 
+non-equivariant Quantum Convolutional Neural Network (QCNN). 
+
+The QCNN ansatzs architecture are taken from the paper :
+Hur, T., Kim, L. & Park, D.K. Quantum convolutional neural network for classical data classification. 
+Quantum Mach. Intell. 4, 3 (2022). https://doi.org/10.1007/s42484-021-00061-x
 """ 
 
 import pennylane as qml
