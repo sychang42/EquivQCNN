@@ -37,6 +37,9 @@ def load_ising_data(root, L):
 
 
 def prepare_ising_data(data, labels, dtype= np.float32, test_size=0.2, validation_size=5000):
+    """
+    Code originally taken from http://physics.bu.edu/~pankajm/ML-Notebooks/HTML/NB12_CIX-DNN_ising_TFlow.html 
+    """
     # divide data into ordered, critical and disordered
     X_ordered=data[:70000,:]
     Y_ordered=labels[:70000]
@@ -70,23 +73,24 @@ def prepare_ising_data(data, labels, dtype= np.float32, test_size=0.2, validatio
 
 
 
-def preprocess_jnp(classes: Union[List[int], jnp.ndarray],
+def preprocess_jnp(classes: jnp.ndarray,
                    trainloader : DataLoader, 
                     testloader : DataLoader
                     ) -> Tuple[jnp.ndarray]: 
     """
-    Function to reduce the dimension of classical data using PCA. 
+    Load Data from PyTorch DataLoader into JAX NumPy Arrays
 
     Args : 
-        classes (Union[List[int], jnp.ndarray]) : List of classes to load. If None, return all classes. 
-        trainloader (torch.utils.data.DataLoader) : Trainset loader 
-        testloader (torch.utils.data.DataLoader) : Testset loader
+        classes (jnp.ndarray) : List of integers representing data classes to be loaded. 
+                                If None, return all classes. 
+        trainloader (torch.utils.data.DataLoader) : Trainset loader.
+        testloader (torch.utils.data.DataLoader) : Testset loader.
     
     Return : 
-        X_train (jnp.ndarray) : Reduced trainset with shape (n_train, n_components) 
-        Y_train (jnp.ndarray) : Trainset labels
-        X_test (jnp.ndarray) : Reduced testset with shape (n_test, n_components) 
-        Y_est (jnp.ndarray) : Testset labels
+      X_train (jnp.ndarray) : Training samples of shape (num_train, img_size, img_size, num_channel). 
+      Y_train (jnp.ndarray) : Training labels of shape (num_train, ).
+      X_test (jnp.ndarray) : Test samples of shape (num_test, img_size, img_size, num_channel). 
+      Y_train (jnp.ndarray) : Test labels of shape (num_test, ).
     """
     X_train = []
     Y_train = []
@@ -139,6 +143,22 @@ def get_data(data: str,
             img_size: int, 
             classes: Union[List[int], jnp.ndarray] = None
             ) -> Tuple[jnp.ndarray,...]: 
+    """
+    Function to load training data. 
+    
+    Args : 
+      data (str) : Name of the dataset. 
+      load_dir (str) : Root directory where the datasets are located. 
+      imgs_size (int) : Image size to be loaded. 
+      classes (Union[List[int], jnp.ndarray]) : List of integers representing data classes to be loaded. 
+                                                If None, return all classes. 
+      
+    Return : 
+      X_train (jnp.ndarray) : Training samples of shape (num_train, img_size, img_size, num_channel). 
+      Y_train (jnp.ndarray) : Training labels of shape (num_train, ).
+      X_test (jnp.ndarray) : Test samples of shape (num_test, img_size, img_size, num_channel). 
+      Y_train (jnp.ndarray) : Test labels of shape (num_test, ).
+    """
     
     if classes is not None and type(classes) is not jnp.ndarray : 
         classes = jnp.array(classes) 

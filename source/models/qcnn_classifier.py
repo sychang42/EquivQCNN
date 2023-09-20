@@ -29,7 +29,7 @@ class QCNNClassifier(nn.Module):
     num_params: int
     equiv: bool
     delta: float
-    hybrid: bool
+    # hybrid: bool (Boolean to indicate whether we add a classical layer at the end. Deprecated.)
         
     def init_params(self, 
                     rng: PRNGKey, 

@@ -51,11 +51,8 @@ def choose_model(model_type : str,
                                                   **kwargs) 
         
         model_cls = QCNNClassifier
-        model_args = {'circuit' : circuit, "num_params" : num_params, "equiv": model_args['equiv'], "delta" : model_args['delta'], 
-                     "hybrid" : model_args['hybrid']}
+        model_args = {'circuit' : circuit, "num_params" : num_params, "equiv": model_args['equiv'], "delta" : model_args['delta']}
         
-    if model_cls is None:
-        raise TypeError("Specified AE type does not exist!")
 
     return model_cls, model_args
 
@@ -79,9 +76,10 @@ def create_state(rng : PRNGKey,
     Return : 
         state (TrainState) : 
     """
-
+    
     if opt_args is None : 
-        opt_args = {"lr" : 0.001, "b1" : 0.7, "b2" : 0.999}
+        opt_args = {"lr" : 0.01, "b1" : 0.9, "b2" : 0.999}
+
 
     model = model_cls(**input_args)
     tx = optax.adam(opt_args['lr'], b1=opt_args['b1'], b2=opt_args['b2'])
