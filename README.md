@@ -1,6 +1,6 @@
 # Approximately Equivariant QCNN under $p4m$ Group Symmetries for Images 
 
-This repository contains code for training an Equivariant Quantum Convolutional Neural Network (QCNN) under $p4m$ group symmetries for image classification tasks. The code is written in Jax[https://github.com/google/jax] and utilizes Pennylane[https://github.com/PennyLaneAI/pennylane] for the quantum operations. 
+This repository contains code for training an Equivariant Quantum Convolutional Neural Network (QCNN) under $p4m$ group symmetries for image classification tasks. The code is written in [Jax](https://github.com/google/jax) and utilizes [Pennylane](https://github.com/PennyLaneAI/pennylane) for the quantum operations. 
 
 ## Usage
 
