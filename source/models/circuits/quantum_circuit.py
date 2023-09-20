@@ -6,11 +6,10 @@ import os
 import sys
 sys.path.append(os.path.dirname(__file__)) 
 
-import pennylane as qml 
-
 import numpy as np
 
 import jax 
+import pennylane as qml 
 
 from typing import Tuple, Callable, Optional
 
@@ -24,13 +23,17 @@ def get_quantum_circuit(num_qubits : int,
                         **kwargs
                          ) -> Tuple[Callable, int]:
     """
-    
+    Load quantum classifier circuit constructed with the given configuration including the final measurement.
+
     Args : 
         num_qubits (int) : Number of qubits in the quantum generator.
+        num_measured (int) : Number of qubits measured at the end of the quantum circuit. 
+                             In case of the non-equiv QCNN, num_measured = ceil(log2(num_classes)).
+                             In case of the EquivQCNN, num_measured = 2*ceil(log2(num_classes)). 
         qnn_config (Union[str, Dict[str, Any]]) : Quantum Circuit configuration for the learning layers.
-        style_based Optional[bool] : Boolean to indicate whether we use style based-architecture. 
-        num_final_qubits (int) : Number of qubits at the end of the circuit in case we use pooling layers in the quantum circuit. 
-                            num_qubits > num_final_qubits. 
+        equiv (Optional[bool]) : Boolean to indicate whether an equivariant neural network is used.
+        trans_inv (Optional[bool]) : Boolean to indicate whether the model is constructed in a translational invariant way.
+
     Return : 
         circuit (Callable) : Quantum generator circuit.
         total_num_params (int) : Total number of parameters required for the generator. 

@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import pennylane as qml
 
-def IsingZ4(phi : float) -> float: 
+def IsingZ4(phi : float) -> jnp.ndarray: 
     """
     ZZZZ rotation. U(\phi) = (e^(i*phi*Z^\otimes4)) 
     
@@ -10,7 +10,6 @@ def IsingZ4(phi : float) -> float:
         
     Return : 
         Diagonal matrix for IsingZ4 rotation 
-        
     """ 
     Z = jnp.array([[1, 0], [0, -1]])
     Z4 = jnp.kron(Z, jnp.kron(Z, jnp.kron(Z, Z)))

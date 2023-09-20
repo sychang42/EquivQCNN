@@ -1,5 +1,5 @@
 """
-Utility methods for classifier training with different classifiers.
+Utility methods for QCNN training. 
 """
 
 import sys
@@ -17,20 +17,20 @@ import optax
 from qcnn_classifier import QCNNClassifier
 from circuits.quantum_circuit import get_quantum_circuit
 
-from typing import Optional, Tuple, Dict, Union, List, Callable
+from typing import Optional, Tuple, Dict, Union, List, Callable, Any
 import pandas as pd
 
 PRNGKey = jnp.ndarray 
         
 def choose_model(model_type : str, 
-                model_args: Dict) -> Callable:
+                model_args: Dict[str, Any]) -> Callable:
     """
     Picks and loads one of the implemented classifier model classes.
     
     Args : 
         model_type (str) : Model type 
-
-    returns :: The loaded autoencoder model with the given hyperparams.
+        model_args (Dict[str, Any]) : Model parameters. 
+    Returns :: The loaded quantum classifier model with the given configuration.
     """
     model_cls = None
     if model_type == "quantum_classifier" : 
@@ -101,7 +101,7 @@ def create_state(rng : PRNGKey,
 def init_trainstate(model_args: Tuple[Dict],
                     opt_args : Tuple[Dict], 
                     input_shape : Tuple,
-                    key : PRNGKey) :
+                    key : PRNGKey) -> Tuple[TrainState, PRNGKey]:
 
     model_cls, model_args = choose_model(model_args['model_type'], model_args)
 
@@ -110,7 +110,10 @@ def init_trainstate(model_args: Tuple[Dict],
     return model_state, key
 
 
-def save_outputs(epoch, snapshot_dir, outputs, labels) :
+def save_outputs(epoch: int,
+                snapshot_dir: str, 
+                outputs: Dict[str, jnp.ndarray],
+                labels: jnp.ndarray) -> None:
     
     df = pd.DataFrame({"preds" : outputs["preds"]}) 
     df['labels'] = labels
@@ -121,8 +124,8 @@ def save_outputs(epoch, snapshot_dir, outputs, labels) :
 
 def print_losses(epoch : int, 
                  epochs : int, 
-                 train_loss : Dict, 
-                 valid_loss : Dict) : 
+                 train_loss : Dict[str, jnp.ndarray], 
+                 valid_loss : Dict[str, jnp.ndarray]) : 
     """
     Print the training and validation losses. 
     

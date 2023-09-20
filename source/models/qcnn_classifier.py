@@ -21,8 +21,10 @@ class QCNNClassifier(nn.Module):
     Image classifier with Equivariant Quantum Convolutional Neural Network
     
     Args : 
-        num_wires: Number of wires in quantum circuit
-        depth: Number of convolutional layers in qcnn
+        circuit (Callable) : Quantum Circuit. 
+        num_params (int) : Number of trainable parameters. 
+        equiv (Bool) : Boolean to indicate whether an equivariant neural network is used.
+        delta (float) : Range of uniform distribution from which the initial parameters are sampled.  
         
     """ 
     circuit: Callable
@@ -56,7 +58,7 @@ class QCNNClassifier(nn.Module):
     def __call__(self,  
              X_batch: jnp.ndarray) -> jnp.ndarray:      
         """
-        Forward function to return classifier output
+        Forward function to return classifier output. 
         
         Args : 
             X_batch (jnp.ndarray) : Classical input data of shape (batch_size, img_size[0], img_size[1], img_size[2])
@@ -73,9 +75,10 @@ class QCNNClassifier(nn.Module):
             classifier_vmap = jax.vmap(lambda z : self.circuit(z, qparams)) 
             
         class_outputs = classifier_vmap(X_batch) 
-        if self.hybrid : 
-            class_outputs = nn.Dense(features = 2)(class_outputs)
-            class_outputs = nn.softmax(class_outputs)
+
+        # if self.hybrid : 
+        #     class_outputs = nn.Dense(features = 2)(class_outputs)
+        #     class_outputs = nn.softmax(class_outputs)
             
         return class_outputs
 
