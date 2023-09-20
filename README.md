@@ -10,9 +10,9 @@ python run.py --config config/training.yaml --gpu 0
  
 The config file should be structured as follows : 
 
-*dataset_params: 
-  -data : Name of training data. 
-  -img_size : Input image size
-  -classes : Data classes (list of integers) to be trained. Only binary classification implemented for the moment.
-  -n_data : Number of training samples. `Null` to use the whole dataset
+* dataset_params: 
+  - data : Name of training data. 
+  - img_size : Input image size
+  - classes : Data classes (list of integers) to be trained. Only binary classification implemented for the moment.
+  - n_data : Number of training samples. `Null` to use the whole dataset
 
