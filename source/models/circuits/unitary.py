@@ -14,8 +14,8 @@ class U_TTN(qml.operation.Operation):
 
     grad_method = "A" # Analytic Differentiation method to use. 
     
-    def __init__(self, *phi, wires, do_queue=True, id=None):
-        super().__init__(*phi, wires=wires, do_queue=do_queue, id=id)
+    def __init__(self, *phi, wires, id=None):
+        super().__init__(*phi, wires=wires, id=id)
         
     @staticmethod
     def compute_decomposition(*angle, wires): 
@@ -37,8 +37,8 @@ class U_6(qml.operation.Operation):
     
     grad_method = "A" # Analytic Differentiation method to use. 
     
-    def __init__(self, *phi, wires, do_queue=True, id=None):
-        super().__init__(*phi, wires=wires, do_queue=do_queue, id=id)
+    def __init__(self, *phi, wires, id=None):
+        super().__init__(*phi, wires=wires, id=id)
         
     @staticmethod
     def compute_decomposition(*angle, wires): 
@@ -65,8 +65,8 @@ class U_SO4(qml.operation.Operation):
     
     grad_method = "A" # Analytic Differentiation method to use. 
     
-    def __init__(self, *phi, wires, do_queue=True, id=None):
-        super().__init__(*phi, wires=wires, do_queue=do_queue, id=id)
+    def __init__(self, *phi, wires, id=None):
+        super().__init__(*phi, wires=wires, id=id)
         
     @staticmethod
     def compute_decomposition(*angle, wires): 
@@ -94,8 +94,8 @@ class Pooling_ansatz(qml.operation.Operation):
   
     grad_method = "A" # Analytic Differentiation method to use. 
     
-    def __init__(self, *phi, wires, do_queue=True, id=None):
-        super().__init__(*phi, wires=wires, do_queue=do_queue, id=id)
+    def __init__(self, *phi, wires, id=None):
+        super().__init__(*phi, wires=wires,  id=id)
         
     @staticmethod
     def compute_decomposition(*angle, wires):  

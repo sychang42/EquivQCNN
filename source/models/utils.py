@@ -18,7 +18,7 @@ from qcnn_classifier import QCNNClassifier
 from circuits.quantum_circuit import get_quantum_circuit
 
 from typing import Optional, Tuple, Dict, Union, List, Callable
-
+import pandas as pd
 
 PRNGKey = jnp.ndarray 
         

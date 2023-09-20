@@ -42,9 +42,12 @@ if __name__ == "__main__":
     
     
     args = parser.parse_args()
+    
+    # GPU to run 
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_num
     
 
+    # Retrieve the config file
     with open(args.filename, 'r') as file:
         try:
             config = yaml.safe_load(file)
@@ -55,34 +58,40 @@ if __name__ == "__main__":
     config['model_params']['num_measured'] = int(ceil(jnp.log2(len(config['dataset_params']['classes']))))
             
     if config['model_params']['equiv'] : 
-        config['model_params']['num_measured'] = config['model_params']['num_measured']*2
+        config['model_params']['num_measured'] = config['model_params']['num_measured']*2  
     
-    # Load MNIST data
-    load_dir = "/data/suchang/shared/Data/"
-    X_train, Y_train, X_test, Y_test = get_data(config['dataset_params']['data'], 
-                                                load_dir, config['dataset_params']['img_size'],
-                                                config['dataset_params']['classes'])
     
-    if config['dataset_params']['data'] == "Ising" : 
-        X_train = (X_train + 1) /2.0 
-        X_test = (X_test + 1) / 2.0
-    
+    # Setup random seed for the training
     seed = np.random.randint(1000) 
     config['training_params']['seed'] = seed 
     
+    # Create logging directory 
     save_dir = config['logging_params']['save_dir']
     snapshot_dir = None
     if save_dir is not None : 
         snapshot_dir = initialize_logging(save_dir, config) 
-      
-    num_classes = jnp.max(Y_train) + 1
+
+
+    # Load dataset
+    load_dir = "/data/suchang/shared/Data/"
+    X_train, Y_train, X_test, Y_test = get_data(config['dataset_params']['data'], 
+                                                load_dir, config['dataset_params']['img_size'],
+                                                config['dataset_params']['classes'])
+
+    # If we have Ising model, rescale the dataset between 0 and 1 
+    if config['dataset_params']['data'] == "Ising" : 
+        X_train = (X_train + 1) /2.0 
+        X_test = (X_test + 1) / 2.0
+
+    # Number of training samples
     n_data = len(X_train) 
     if 'n_data' in config['dataset_params'] and config['dataset_params']['n_data'] is not None : 
         n_data = config['dataset_params']['n_data']
     
-    train_ds = {"image": X_train[:n_data], "label" :Y_train[:n_data]} 
-    test_ds = {"image": X_test, "label" : Y_test} 
+
+    train_ds = {"image": X_train[:n_data], "label" :Y_train[:n_data]} # Train set
+    test_ds = {"image": X_test, "label" : Y_test} # Test set
     
     
-    # Train 
+    # Train the model
     train_model(train_ds, test_ds, config['training_params'], config['model_params'], config['opt_params'], seed, snapshot_dir)

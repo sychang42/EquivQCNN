@@ -68,7 +68,7 @@ class QCNNClassifier(nn.Module):
         qparams = self.param('qparams', self.init_params, self.num_params)
         
         if self.equiv : 
-            classifier_vmap = jax.vmap(lambda z : jnp.sum(self.circuit(z, qparams), axis = 0)/2.) 
+            classifier_vmap = jax.vmap(lambda z : jnp.sum(jnp.array(self.circuit(z, qparams)), axis = 0)/2.) 
         else : 
             classifier_vmap = jax.vmap(lambda z : self.circuit(z, qparams)) 
             
