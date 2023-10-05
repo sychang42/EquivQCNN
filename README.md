@@ -3,13 +3,16 @@
 
 
 <div align="center">
-<h3 align="center">Practical Quantum Machine Learning for Image Classification</h3>
+<h3 align="center">Approximately Equivariant Quantum Neural Network for $p4m Group Symmetries in Images
+</h3>
   <p align="center">
-     Image classification using a hybrid approach with classical dimensionality reduction and a quantum classifier.
+     Image classification using with an Equivariant Quantum Convolutional Neural Network based on the inherent symmetry of the input dataset. 
     <br />
     <a href="https://github.com/EquivQCNN/docs"><strong>Explore the docs »</strong></a>
     <br />
     <br />
+    <a href="https://arxiv.org/abs/2310.02323">Paper</a>
+    .
     <a href="https://github.com/github_username/repo_name">View Demo</a>
     ·
     <a href="https://github.com/sychang42/EquivQCNN/issues">Report Bug</a>
@@ -17,7 +20,6 @@
     <a href="https://github.com/sychang42/EquivQCNN/issues">Request Feature</a>
   </p>
 </div>
-
 
 ## About the codes
 
@@ -61,6 +63,19 @@ The configuration file `configs/training.yaml` should be structured as follows :
 
 * __logging_params__: 
   - *save_dir* : Root directory to store the training results. If `Null`, the results will not stored.
+
+## Cite
+
+```
+@misc{chang2023approximately,
+      title={Approximately Equivariant Quantum Neural Network for $p4m$ Group Symmetries in Images}, 
+      author={Su Yeon Chang and Michele Grossi and Bertrand Le Saux and Sofia Vallecorsa},
+      year={2023},
+      eprint={2310.02323},
+      archivePrefix={arXiv},
+      primaryClass={quant-ph}
+}
+```
 
 
 ## License
