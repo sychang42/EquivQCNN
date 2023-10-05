@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>metrics &#8212; Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    
+    <script src="../_static/documentation_options.js?v=0654038e"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">metrics</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for metrics</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Losses used for quantum classifier training.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">from</span> <span class="nn">jax</span> <span class="kn">import</span> <span class="n">Array</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+
+
+<div class="viewcode-block" id="BCE_loss">
+<a class="viewcode-back" href="../metrics.html#metrics.BCE_loss">[docs]</a>
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">BCE_loss</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Measures the Binary Cross Entropy (BCE) loss between each element in the one-hot</span>
+<span class="sd">    encoded target :math:`x` and the input :math:`y` given by the equations :</span>
+
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \ell(x, y) = - \sum_{n=1}^N_\mathbf{x}_n \cdot \log (\mathbf{y}_n),</span>
+
+<span class="sd">    where :math:`N` is the batch size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (Array): Targets of shape ``(N, L)``</span>
+<span class="sd">        y (Array): Targets of shape ``(N, L)``</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Array: BCE loss value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_classes</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="MSE_loss">
+<a class="viewcode-back" href="../metrics.html#metrics.MSE_loss">[docs]</a>
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">MSE_loss</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Measures the Mean Squared Error (MSE) loss between each element in the target</span>
+<span class="sd">    :math:`x` and the input :math:`y` given by the equation :</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \ell_{\text{MSE}}(x, y) = \frac{1}{N}\sum_{n=1}^N\sqrt{\left( x_n - y_n \right)^2},</span>
+
+<span class="sd">    where :math:`N` is the number of elements in :math:`x` and :math:`y`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (Array): Targets of shape ``(N, 1)``</span>
+<span class="sd">        y (Array): Inputs of shape ``(N, 1)``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Array: MSE loss value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="accuracy">
+<a class="viewcode-back" href="../metrics.html#metrics.accuracy">[docs]</a>
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Measures accuracy between the target labels ``target`` and the predicted labels</span>
+<span class="sd">    ``pred``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        target (Array): The target labels.</span>
+<span class="sd">        pred (Array): The predicted labels.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Array: Accuracy caculated between ``target`` and ``pred``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">target</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">accuracy</span></div>
+
+
+
+<div class="viewcode-block" id="get_metrics">
+<a class="viewcode-back" href="../metrics.html#metrics.get_metrics">[docs]</a>
+<span class="k">def</span> <span class="nf">get_metrics</span><span class="p">(</span><span class="n">loss_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        loss_type (List[str]):</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to return Callable corresponding the given loss types.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        loss_type (str): String representing the loss types to be returned.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: Return error if the given loss type is not implemented.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable: The loss function corresponding to the given ``loss_type``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">switcher</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;MSE_loss&quot;</span><span class="p">:</span> <span class="n">MSE_loss</span><span class="p">,</span> <span class="s2">&quot;BCE_loss&quot;</span><span class="p">:</span> <span class="n">BCE_loss</span><span class="p">,</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="n">accuracy</span><span class="p">}</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">switcher</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">loss_type</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Specified loss does not exist!&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loss</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">metrics</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, Su Yeon Chang.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

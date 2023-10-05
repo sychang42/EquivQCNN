@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>model_utils &#8212; Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    
+    <script src="../_static/documentation_options.js?v=0654038e"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">model_utils</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for model_utils</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility methods for QCNN training. </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+
+
+<span class="kn">import</span> <span class="nn">flax.linen</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
+
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">import</span> <span class="nn">optax</span>
+
+<span class="kn">from</span> <span class="nn">qcnn_classifier</span> <span class="kn">import</span> <span class="n">QCNNClassifier</span>
+<span class="kn">from</span> <span class="nn">circuits.quantum_circuit</span> <span class="kn">import</span> <span class="n">get_quantum_circuit</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">PRNGKey</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+
+
+<div class="viewcode-block" id="choose_model">
+<a class="viewcode-back" href="../model_utils.html#model_utils.choose_model">[docs]</a>
+<span class="k">def</span> <span class="nf">choose_model</span><span class="p">(</span><span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Picks and loads one of the implemented classifier model classes with the given</span>
+<span class="sd">    hyperparmaeters.</span>
+
+<span class="sd">    Args</span>
+<span class="sd">        model_type (str) : Model type. Currently, only the quantum classifier is</span>
+<span class="sd">            implemented.</span>
+<span class="sd">        model_args (Dict[str, Any]) : Model parameters.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable: The loaded quantum classifier model with the given configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_cls</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;quantum_classifier&quot;</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;ver&quot;</span> <span class="ow">in</span> <span class="n">model_args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;qnn_ver&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;ver&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;qnn_config&quot;</span> <span class="ow">in</span> <span class="n">model_args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;qnn_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;qnn_config&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;symmetry_breaking&quot;</span> <span class="ow">in</span> <span class="n">model_args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sym_break&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;symmetry_breaking&quot;</span><span class="p">]</span>
+
+        <span class="n">circuit</span><span class="p">,</span> <span class="n">num_params</span> <span class="o">=</span> <span class="n">get_quantum_circuit</span><span class="p">(</span>
+            <span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;num_wires&quot;</span><span class="p">],</span>
+            <span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;num_measured&quot;</span><span class="p">],</span>
+            <span class="n">equiv</span><span class="o">=</span><span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;equiv&quot;</span><span class="p">],</span>
+            <span class="n">trans_inv</span><span class="o">=</span><span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;trans_inv&quot;</span><span class="p">],</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">model_cls</span> <span class="o">=</span> <span class="n">QCNNClassifier</span>
+        <span class="n">model_args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;circuit&quot;</span><span class="p">:</span> <span class="n">circuit</span><span class="p">,</span>
+            <span class="s2">&quot;num_params&quot;</span><span class="p">:</span> <span class="n">num_params</span><span class="p">,</span>
+            <span class="s2">&quot;equiv&quot;</span><span class="p">:</span> <span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;equiv&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="n">model_args</span><span class="p">[</span><span class="s2">&quot;delta&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">model_args</span></div>
+
+
+
+<div class="viewcode-block" id="create_state">
+<a class="viewcode-back" href="../model_utils.html#model_utils.create_state">[docs]</a>
+<span class="k">def</span> <span class="nf">create_state</span><span class="p">(</span>
+    <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">,</span>
+    <span class="n">model_cls</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+    <span class="n">input_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]],</span>
+    <span class="n">input_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">opt_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainState</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to create train state of input class</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rng (PRNGKey): Random number generator key</span>
+<span class="sd">        model_cls (nn.Module): Flax class to create trainstate</span>
+<span class="sd">        input_shape (Tuple[int]): Input data shape</span>
+<span class="sd">        input_args (Dict): Input argument for trainstate class</span>
+<span class="sd">        opt_args (Dict): Optimizer arguments</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TrainState: Initial training state.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">opt_args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">opt_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">:</span> <span class="mf">0.999</span><span class="p">}</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="p">(</span><span class="o">**</span><span class="n">input_args</span><span class="p">)</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span><span class="n">opt_args</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">],</span> <span class="n">b1</span><span class="o">=</span><span class="n">opt_args</span><span class="p">[</span><span class="s2">&quot;b1&quot;</span><span class="p">],</span> <span class="n">b2</span><span class="o">=</span><span class="n">opt_args</span><span class="p">[</span><span class="s2">&quot;b2&quot;</span><span class="p">])</span>
+    <span class="c1">#     tx = optax.amsgrad(opt_args[&#39;lr&#39;], b1=opt_args[&#39;b1&#39;], b2=opt_args[&#39;b2&#39;])</span>
+
+    <span class="c1"># In case we add regularization</span>
+    <span class="k">if</span> <span class="s2">&quot;weight_decay&quot;</span> <span class="ow">in</span> <span class="n">opt_args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">tx</span> <span class="o">=</span> <span class="n">optax</span><span class="o">.</span><span class="n">adamw</span><span class="p">(</span>
+            <span class="n">opt_args</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">],</span>
+            <span class="n">b1</span><span class="o">=</span><span class="n">opt_args</span><span class="p">[</span><span class="s2">&quot;b1&quot;</span><span class="p">],</span>
+            <span class="n">b2</span><span class="o">=</span><span class="n">opt_args</span><span class="p">[</span><span class="s2">&quot;b2&quot;</span><span class="p">],</span>
+            <span class="n">weight_decay</span><span class="o">=</span><span class="n">opt_args</span><span class="p">[</span><span class="s2">&quot;weight_decay&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="n">variables</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">input_shape</span><span class="p">))</span>
+
+    <span class="n">state</span> <span class="o">=</span> <span class="n">TrainState</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">apply_fn</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="n">tx</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">state</span></div>
+
+
+
+<div class="viewcode-block" id="init_trainstate">
+<a class="viewcode-back" href="../model_utils.html#model_utils.init_trainstate">[docs]</a>
+<span class="k">def</span> <span class="nf">init_trainstate</span><span class="p">(</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">opt_args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">input_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">PRNGKey</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TrainState</span><span class="p">,</span> <span class="n">PRNGKey</span><span class="p">]:</span>
+    <span class="n">model_cls</span><span class="p">,</span> <span class="n">model_args</span> <span class="o">=</span> <span class="n">choose_model</span><span class="p">(</span><span class="s2">&quot;quantum_classifier&quot;</span><span class="p">,</span> <span class="n">model_args</span><span class="p">)</span>
+
+    <span class="n">model_state</span> <span class="o">=</span> <span class="n">create_state</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">model_args</span><span class="p">,</span> <span class="n">opt_args</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model_state</span><span class="p">,</span> <span class="n">key</span></div>
+
+
+
+<div class="viewcode-block" id="save_outputs">
+<a class="viewcode-back" href="../model_utils.html#model_utils.save_outputs">[docs]</a>
+<span class="k">def</span> <span class="nf">save_outputs</span><span class="p">(</span>
+    <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">snapshot_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">labels</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">]})</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">snapshot_dir</span><span class="p">,</span> <span class="s2">&quot;classification_epoch&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.csv&quot;</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="print_losses">
+<a class="viewcode-back" href="../model_utils.html#model_utils.print_losses">[docs]</a>
+<span class="k">def</span> <span class="nf">print_losses</span><span class="p">(</span>
+    <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">train_loss</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">valid_loss</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print the training and validation losses.</span>
+
+<span class="sd">    Args :</span>
+<span class="sd">        epoch (int) : Current epoch</span>
+<span class="sd">        epochs (int) : Total number of epohcs</span>
+<span class="sd">        train_loss (dict) : Training loss</span>
+<span class="sd">        valid_loss (dict) : Validation loss</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Epoch : </span><span class="si">{</span><span class="n">epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">, Train loss (average) = &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">train_loss</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Epoch : </span><span class="si">{</span><span class="n">epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">, Valid loss = &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">valid_loss</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">model_utils</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, Su Yeon Chang.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

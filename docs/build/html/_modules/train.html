@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>train &#8212; Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    
+    <script src="../_static/documentation_options.js?v=0654038e"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">train</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for train</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+
+
+<span class="kn">import</span> <span class="nn">jax</span>
+
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">metrics</span> <span class="kn">import</span> <span class="n">get_metrics</span>
+
+<span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="kn">from</span> <span class="nn">model_utils</span> <span class="kn">import</span> <span class="n">init_trainstate</span><span class="p">,</span> <span class="n">print_losses</span><span class="p">,</span> <span class="n">save_outputs</span>
+
+
+<div class="viewcode-block" id="compute_metrics">
+<a class="viewcode-back" href="../train.html#train.compute_metrics">[docs]</a>
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">compute_metrics</span><span class="p">(</span>
+    <span class="n">pred</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute training metrics (Only BCE loss and accuracy implemented for the moment)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pred (jnp.ndarray) : Classifier outputs</span>
+<span class="sd">        labels (jnp.ndarray) : Data labels (Ground truth)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[float, Dict[str, float]]: Tuple conatining the total loss, with respect</span>
+<span class="sd">        to which we take the gradient and the dictionary of each losses</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">loss_type</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;BCE_loss&quot;</span><span class="p">,</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">]</span>
+
+    <span class="n">loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">loss_type</span><span class="p">:</span>
+        <span class="n">losses</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_metrics</span><span class="p">(</span><span class="n">l</span><span class="p">)(</span><span class="n">labels</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;loss&quot;</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">+=</span> <span class="n">losses</span><span class="p">[</span><span class="n">l</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">losses</span></div>
+
+
+
+<div class="viewcode-block" id="train_batch">
+<a class="viewcode-back" href="../train.html#train.train_batch">[docs]</a>
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">train_batch</span><span class="p">(</span>
+    <span class="n">x_batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">y_batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">model_state</span><span class="p">:</span> <span class="n">TrainState</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TrainState</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train the model on a single batch.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x_batch (jnp.ndarray) : Classical input data of shape :math:`(batchsize,</span>
+<span class="sd">            img_size[0],img_size[1], img_size[2])`.</span>
+<span class="sd">        y_batch (jnp.ndarray) : Input data labels of shape :math:`(batchsize, )`.</span>
+<span class="sd">        model_state (TrainState) : Quantum Classifier model train state.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[TrainState, Dict[str, float], jnp.ndarray]: Tuple containing the updated</span>
+<span class="sd">        model train state, the dictionary of losses computed on ``x_batch``, ``y_batch``,</span>
+<span class="sd">        and the quantum classifier outputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">class_outputs</span> <span class="o">=</span> <span class="n">model_state</span><span class="o">.</span><span class="n">apply_fn</span><span class="p">({</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">params</span><span class="p">},</span> <span class="n">x_batch</span><span class="p">)</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">losses</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span><span class="n">class_outputs</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="p">(</span><span class="n">losses</span><span class="p">,</span> <span class="n">class_outputs</span><span class="p">)</span>
+
+    <span class="n">grad_fn</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">value_and_grad</span><span class="p">(</span><span class="n">loss_fn</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="p">(</span><span class="n">losses</span><span class="p">,</span> <span class="n">class_outputs</span><span class="p">)),</span> <span class="n">grads</span> <span class="o">=</span> <span class="n">grad_fn</span><span class="p">(</span><span class="n">model_state</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="c1"># Update the generator parameters.</span>
+    <span class="n">new_model_state</span> <span class="o">=</span> <span class="n">model_state</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">grads</span><span class="o">=</span><span class="n">grads</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_model_state</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">class_outputs</span></div>
+
+
+
+<div class="viewcode-block" id="validate">
+<a class="viewcode-back" href="../train.html#train.validate">[docs]</a>
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span> <span class="nf">validate</span><span class="p">(</span>
+    <span class="n">x_batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">model_state</span><span class="p">:</span> <span class="n">TrainState</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Validate the model on a single batch.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x_batch (jnp.ndarray) :</span>
+<span class="sd">        y_batch (jnp.ndarray) :</span>
+<span class="sd">        model_state (TrainState) :</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        losses (Dict[str, float]) : Dictionary of losses computed on x_batch, y_batch.</span>
+<span class="sd">        preds (jnp.ndarray) :</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x_batch (jnp.ndarray): Classical input data of shape :math:`(batchsize,</span>
+<span class="sd">            img_size[0], img_size[1], img_size[2])`.</span>
+<span class="sd">        y_batch (jnp.ndarray): Input data labels of shape :math:`(batchsize, ).</span>
+<span class="sd">        model_state (TrainState): Quantum Classifier model train state (Not trained).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[Dict, jnp.ndarray]: Tuple containing the dictionary of losses computed on</span>
+<span class="sd">        ``x_batch``, ``y_batch``, and the predicted labels of shape :math:`(batchsize,</span>
+<span class="sd">        )`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">class_outputs</span> <span class="o">=</span> <span class="n">model_state</span><span class="o">.</span><span class="n">apply_fn</span><span class="p">({</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">model_state</span><span class="o">.</span><span class="n">params</span><span class="p">},</span> <span class="n">x_batch</span><span class="p">)</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">losses</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span><span class="n">class_outputs</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">class_outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="n">class_outputs</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">class_outputs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)}</span>
+    <span class="k">return</span> <span class="n">losses</span><span class="p">,</span> <span class="n">preds</span></div>
+
+
+
+<div class="viewcode-block" id="train_model">
+<a class="viewcode-back" href="../train.html#train.train_model">[docs]</a>
+<span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span>
+    <span class="n">train_ds</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">test_ds</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">train_args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">model_args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">opt_args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">snapshot_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Train the non-equivariant and equivaraint Quantum Convolutional Neural Network</span>
+<span class="sd">    for image classification using the provided datasets and hyperparameters.</span>
+
+
+<span class="sd">    Args:</span>
+<span class="sd">        train_ds (Dict[str, jnp.ndarray]): Dictionary with training data and labels.</span>
+<span class="sd">        test_ds (Dict[str, jnp.ndarray]): Dictionary with test data and labels.</span>
+<span class="sd">        train_args (Dict[str, Any]): Hyperparameters needed for classifier training.</span>
+<span class="sd">            The dictionary should contain the following points:</span>
+
+<span class="sd">            * *num_epochs*: Integer indicating the number of training epochs.</span>
+<span class="sd">            * *batch_size*: Integer indicating the training batch size.</span>
+<span class="sd">            * *loss_type*: List of strings representing the loss types used in the</span>
+<span class="sd">              training. Currently, only :func:`metrics.BCE_loss` and</span>
+<span class="sd">              :func:`metrics.accuracy` are supported.</span>
+
+<span class="sd">        model_args (Dict[str, Any]): Arguments required to constructed the QCNN.</span>
+
+<span class="sd">            * *num_wires*: Number of qubits in the quantum classifier.</span>
+<span class="sd">            * *num_measured*: Number of measured qubits at the end of the circuit. For</span>
+<span class="sd">              L classes, we measure :math:`\lceil (\log_2(L))\rceil` qubits in case of</span>
+<span class="sd">              the non-equivariant QCNN, and :math:`\lceil (\log_2(L))\rceil`</span>
+<span class="sd">              qubits in case of the equivariant QCNN.</span>
+<span class="sd">            * *equiv*: Boolean to indicate whether an equivariant neural network is used.</span>
+<span class="sd">              If True, the quantum classifier loads :class:`circuits.qcnn.EquivQCNN`,</span>
+<span class="sd">              otherwise, it loads :class:`circuits.qcnn.QCNN`.</span>
+<span class="sd">            * *trans_inv*: Boolean to indicate whether the QCNN is</span>
+<span class="sd">              translational invariant or not. If True, all filters in a layer share</span>
+<span class="sd">              identical parameters; otherwise, different parameters are used. (To be</span>
+<span class="sd">              implemented)</span>
+<span class="sd">            * *ver*: Quantum circuit architecture version.</span>
+<span class="sd">            * *symmetry_breaking*: Boolean to indicate whether we use :math:`RZ` gates</span>
+<span class="sd">              at the end of the quantum circuit in case of the EquivQCNN.</span>
+
+<span class="sd">        optim_args (Dict[str, float]): :class:`optax.adam` optimizer hyperparameters.</span>
+
+<span class="sd">            * *learning_rate*: Learning rate for the optimizer.</span>
+<span class="sd">            * *b1*: :math:`\beta_1` value of the Adam optimizer.</span>
+<span class="sd">            * *b2*: :math:`\beta_2` value of the Adam optimizer.</span>
+
+<span class="sd">        seed (int): Seed used to generate random values using JAX&#39;s random number</span>
+<span class="sd">            generator (:class:`jax.random`).</span>
+<span class="sd">        snapshot_dir (str, optional): Directory to store the training result if not</span>
+<span class="sd">            None. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[Dict[str, Any], Dict[str, Any]]: Tuple of dictionaries containing the</span>
+<span class="sd">        training and test set loss progression based on the specified ``loss_type``.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; train_args = {&quot;num_epochs&quot;: 5, &quot;batch_size&quot; : 1024, &quot;loss_type&quot;: [&#39;BCE_loss&#39;,</span>
+<span class="sd">        ...               &#39;accuracy]}</span>
+<span class="sd">        &gt;&gt;&gt; model_args = {&quot;num_wires&quot;: 8, &quot;num_measured&quot; : 2,  &quot;equiv&quot;: True,</span>
+<span class="sd">        ...                 &quot;trans_inv&quot;: True, &quot;ver&quot;: &quot;noisy_equiv&quot;,</span>
+<span class="sd">        ...                  &quot;symmetry_breaking&quot;: True}</span>
+<span class="sd">        &gt;&gt;&gt; opt_args = {&quot;learning_rate&quot;: 0.01, &quot;b1&quot; : 0.9, &quot;b2&quot;: 0.999}</span>
+<span class="sd">        &gt;&gt;&gt; train_loss, test_loss = train(train_ds, test_ds, train_args, model_args,</span>
+<span class="sd">        ...                         opt_args, &quot;Result&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(train_loss)</span>
+<span class="sd">            {&#39;BCE_loss&#39;: [0.6449261327584586, 0.600408172607422, 0.5616568744182586,</span>
+<span class="sd">            0.5470444520314535, 0.537257703145345], &#39;accuracy&#39;: [0.6750000019868214,</span>
+<span class="sd">            0.7497685273488361, 0.8037037114302319, 0.8217592616875966, 0.8263888935248058]</span>
+<span class="sd">            }</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">epochs</span> <span class="o">=</span> <span class="n">train_args</span><span class="p">[</span><span class="s2">&quot;num_epochs&quot;</span><span class="p">]</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">train_args</span><span class="p">[</span><span class="s2">&quot;batchsize&quot;</span><span class="p">]</span>
+    <span class="n">loss_type</span> <span class="o">=</span> <span class="n">train_args</span><span class="p">[</span><span class="s2">&quot;loss_type&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Image shape</span>
+    <span class="n">im_shape</span> <span class="o">=</span> <span class="n">train_ds</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">key</span><span class="p">,</span> <span class="n">init_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">im_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">im_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">im_shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">model_state</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">init_trainstate</span><span class="p">(</span><span class="n">model_args</span><span class="p">,</span> <span class="n">opt_args</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="c1"># If we store the results</span>
+    <span class="n">fieldnames</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">]</span>
+    <span class="n">fieldnames</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">loss_type</span><span class="p">])</span>
+    <span class="n">fieldnames</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;_test&quot;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">loss_type</span><span class="p">])</span>
+    <span class="n">fieldnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;time_taken&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">snapshot_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">snapshot_dir</span><span class="p">,</span> <span class="s2">&quot;output.csv&quot;</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csv_file</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">fieldnames</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+
+    <span class="n">train_ds_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_ds</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">])</span>
+    <span class="n">steps_per_epoch</span> <span class="o">=</span> <span class="n">train_ds_size</span> <span class="o">//</span> <span class="n">batch_size</span>
+
+    <span class="c1"># Train autoencoder</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Epoch...&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">train_loss_epoch</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">loss_type</span><span class="p">}</span>
+
+        <span class="n">start_epoch</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="n">key</span><span class="p">,</span> <span class="n">init_key</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">perms</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">train_ds_size</span><span class="p">)</span>
+        <span class="n">perms</span> <span class="o">=</span> <span class="n">perms</span><span class="p">[:</span> <span class="n">steps_per_epoch</span> <span class="o">*</span> <span class="n">batch_size</span><span class="p">]</span>
+        <span class="n">perms</span> <span class="o">=</span> <span class="n">perms</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">steps_per_epoch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">))</span>
+
+        <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">total</span><span class="o">=</span><span class="n">steps_per_epoch</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Training...&quot;</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">progress_bar_train</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps_per_epoch</span><span class="p">):</span>
+                <span class="n">batch_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">train_ds</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">perms</span><span class="p">[</span><span class="n">b</span><span class="p">]]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">train_ds</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+
+                <span class="c1"># Update Model.</span>
+                <span class="n">model_state</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">class_outputs</span> <span class="o">=</span> <span class="n">train_batch</span><span class="p">(</span>
+                    <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">],</span> <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">model_state</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">loss</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">train_loss_epoch</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+                <span class="n">progress_bar_train</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">del</span> <span class="n">batch_data</span>
+
+            <span class="n">val_batch_size</span> <span class="o">=</span> <span class="mi">1024</span>
+            <span class="n">test_batch_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_ds</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">])</span> <span class="o">//</span> <span class="n">val_batch_size</span>
+
+            <span class="n">valid_losses</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">loss_type</span><span class="p">}</span>
+            <span class="n">valid_outputs</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">test_batch_num</span><span class="p">):</span>
+                <span class="n">batch_data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">test_ds</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">j</span> <span class="o">*</span> <span class="n">val_batch_size</span> <span class="p">:</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">val_batch_size</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">test_ds</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="p">}</span>
+                <span class="n">valid_loss</span><span class="p">,</span> <span class="n">outputs</span> <span class="o">=</span> <span class="n">validate</span><span class="p">(</span>
+                    <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">],</span> <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">model_state</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">valid_loss</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">valid_losses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="n">valid_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_ds</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">test_batch_num</span> <span class="o">*</span> <span class="n">val_batch_size</span><span class="p">:</span>
+                <span class="n">batch_data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">test_ds</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">test_batch_num</span> <span class="o">*</span> <span class="n">val_batch_size</span> <span class="p">:]</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">test_ds</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="p">}</span>
+                <span class="n">valid_loss</span><span class="p">,</span> <span class="n">outputs</span> <span class="o">=</span> <span class="n">validate</span><span class="p">(</span>
+                    <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">],</span> <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">model_state</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">valid_loss</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">valid_losses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="n">valid_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+            <span class="n">valid_loss</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">valid_losses</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">train_loss</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">train_loss_epoch</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">valid_outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">valid_outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+            <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">valid_outputs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">outputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">outputs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">print_losses</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">,</span> <span class="n">valid_loss</span><span class="p">)</span>
+
+            <span class="c1"># Save results.</span>
+            <span class="k">if</span> <span class="n">snapshot_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Store output</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">snapshot_dir</span><span class="p">,</span> <span class="s2">&quot;output.csv&quot;</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span>
+                <span class="p">)</span> <span class="k">as</span> <span class="n">csv_file</span><span class="p">:</span>
+                    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">fieldnames</span><span class="p">)</span>
+
+                    <span class="n">to_write</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;epoch&quot;</span><span class="p">:</span> <span class="n">epoch</span><span class="p">}</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">train_loss</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">to_write</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">valid_loss</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">to_write</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;_test&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+                    <span class="n">to_write</span><span class="p">[</span><span class="s2">&quot;time_taken&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_epoch</span><span class="p">)</span> <span class="o">/</span> <span class="mf">60.0</span>
+
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">to_write</span><span class="p">)</span>
+
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">snapshot_dir</span><span class="p">,</span> <span class="s2">&quot;train_parameters.txt&quot;</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span>
+                <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">model_state</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;qparams&quot;</span><span class="p">]:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">save_outputs</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">snapshot_dir</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">test_ds</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">train_loss</span><span class="p">,</span> <span class="n">valid_loss</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">train</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, Su Yeon Chang.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

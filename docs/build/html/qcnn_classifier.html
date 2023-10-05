@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>qcnn_classifier module &#8212; Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=0654038e"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="train module" href="train.html" />
+    <link rel="prev" title="model_utils module" href="model_utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="train.html" title="train module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="model_utils.html" title="model_utils module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="src.html" >src</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="models.html" accesskey="U">models</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">qcnn_classifier module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-qcnn_classifier">
+<span id="qcnn-classifier-module"></span><h1>qcnn_classifier module<a class="headerlink" href="#module-qcnn_classifier" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qcnn_classifier.</span></span><span class="sig-name descname"><span class="pre">QCNNClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_params:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equiv:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta:</span> <span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent:</span> <span class="pre">~typing.Type[~flax.linen.module.Module]</span> <span class="pre">|</span> <span class="pre">~typing.Type[~flax.core.scope.Scope]</span> <span class="pre">|</span> <span class="pre">~typing.Type[~flax.linen.module._Sentinel]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">&lt;flax.linen.module._Sentinel</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qcnn_classifier.html#QCNNClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qcnn_classifier.QCNNClassifier" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Image classifier with Equivariant Quantum Convolutional Neural Network</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>circuit</strong> (<em>Callable</em>) – Quantum Circuit.</p></li>
+<li><p><strong>num_params</strong> (<em>int</em>) – Number of trainable parameters.</p></li>
+<li><p><strong>equiv</strong> (<em>Bool</em>) – Boolean to indicate whether an equivariant neural network is used.</p></li>
+<li><p><strong>delta</strong> (<em>float</em>) – Range of uniform distribution from which the initial parameters
+are sampled.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.circuit">
+<span class="sig-name descname"><span class="pre">circuit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.circuit" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.delta">
+<span class="sig-name descname"><span class="pre">delta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.delta" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.equiv">
+<span class="sig-name descname"><span class="pre">equiv</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.equiv" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.init_params">
+<span class="sig-name descname"><span class="pre">init_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_qparams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Array</span></span></span><a class="reference internal" href="_modules/qcnn_classifier.html#QCNNClassifier.init_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.init_params" title="Link to this definition">¶</a></dt>
+<dd><p>Function to initialize quantum circuit parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rng</strong> (<em>PRNGKey</em>) – Random Number Generator Key</p></li>
+<li><p><strong>num_qparams</strong> (<em>int</em>) – Number of quantum circuit parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initial parameters of shape</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jnp.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.num_params">
+<span class="sig-name descname"><span class="pre">num_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.num_params" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Scope</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">_Sentinel</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.parent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qcnn_classifier.QCNNClassifier.scope">
+<span class="sig-name descname"><span class="pre">scope</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#qcnn_classifier.QCNNClassifier.scope" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">qcnn_classifier module</a><ul>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier</span></code></a><ul>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.circuit"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.circuit</span></code></a></li>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.delta"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.delta</span></code></a></li>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.equiv"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.equiv</span></code></a></li>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.init_params"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.init_params()</span></code></a></li>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.name"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.name</span></code></a></li>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.num_params"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.num_params</span></code></a></li>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.parent"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.parent</span></code></a></li>
+<li><a class="reference internal" href="#qcnn_classifier.QCNNClassifier.scope"><code class="docutils literal notranslate"><span class="pre">QCNNClassifier.scope</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="model_utils.html"
+                          title="previous chapter">model_utils module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="train.html"
+                          title="next chapter">train module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/qcnn_classifier.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="train.html" title="train module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="model_utils.html" title="model_utils module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="src.html" >src</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="models.html" >models</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">qcnn_classifier module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, Su Yeon Chang.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

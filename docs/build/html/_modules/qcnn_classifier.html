@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>qcnn_classifier &#8212; Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    
+    <script src="../_static/documentation_options.js?v=0654038e"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">qcnn_classifier</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for qcnn_classifier</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">import</span> <span class="nn">flax.linen</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
+
+<span class="kn">import</span> <span class="nn">pennylane</span> <span class="k">as</span> <span class="nn">qml</span>
+
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="n">PRNGKey</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+
+
+<div class="viewcode-block" id="QCNNClassifier">
+<a class="viewcode-back" href="../qcnn_classifier.html#qcnn_classifier.QCNNClassifier">[docs]</a>
+<span class="k">class</span> <span class="nc">QCNNClassifier</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Image classifier with Equivariant Quantum Convolutional Neural Network</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        circuit (Callable): Quantum Circuit.</span>
+<span class="sd">        num_params (int): Number of trainable parameters.</span>
+<span class="sd">        equiv (Bool): Boolean to indicate whether an equivariant neural network is used.</span>
+<span class="sd">        delta (float): Range of uniform distribution from which the initial parameters</span>
+<span class="sd">            are sampled.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">circuit</span><span class="p">:</span> <span class="n">Callable</span>
+    <span class="n">num_params</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">equiv</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="c1"># hybrid: bool (Boolean to indicate whether we add a classical layer at the end. Deprecated.)</span>
+
+<div class="viewcode-block" id="QCNNClassifier.init_params">
+<a class="viewcode-back" href="../qcnn_classifier.html#qcnn_classifier.QCNNClassifier.init_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">,</span> <span class="n">num_qparams</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1">#         return jax.random.normal(rng, (num_qparams, ))</span>
+
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize quantum circuit parameters</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rng (PRNGKey): Random Number Generator Key</span>
+<span class="sd">            num_qparams (int): Number of quantum circuit parameters</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            jnp.ndarray: Initial parameters of shape</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Uniform initialization of initial weights</span>
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+            <span class="n">rng</span><span class="p">,</span> <span class="p">(</span><span class="n">num_qparams</span><span class="p">,),</span> <span class="n">minval</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1">#         return jax.random.normal(rng, (num_qparams, ))*self.delta</span>
+
+    <span class="nd">@nn</span><span class="o">.</span><span class="n">compact</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward function to return classifier output.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X_batch (jnp.ndarray): Classical input data of shape ``(batch_size,</span>
+<span class="sd">                img_size[0], img_size[1], img_size[2])``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            jnp.ndarray: Quantum Classifier output of shape  ``(batch_size,</span>
+<span class="sd">            ceil(log2(n_class)))``</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qparams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s2">&quot;qparams&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equiv</span><span class="p">:</span>
+            <span class="n">classifier_vmap</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">circuit</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">qparams</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">classifier_vmap</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">qparams</span><span class="p">))</span>
+
+        <span class="n">class_outputs</span> <span class="o">=</span> <span class="n">classifier_vmap</span><span class="p">(</span><span class="n">X_batch</span><span class="p">)</span>
+
+        <span class="c1"># if self.hybrid :</span>
+        <span class="c1">#     class_outputs = nn.Dense(features = 2)(class_outputs)</span>
+        <span class="c1">#     class_outputs = nn.softmax(class_outputs)</span>
+
+        <span class="k">return</span> <span class="n">class_outputs</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">qcnn_classifier</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, Su Yeon Chang.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

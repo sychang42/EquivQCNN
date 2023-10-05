@@ -10,7 +10,7 @@ Welcome to Approximately Equivariant QCNN under p4m Group Symmetries for Images'
    :maxdepth: 2
    :caption: Contents:
    
-   modules
+   src
 
 
 Indices and tables
