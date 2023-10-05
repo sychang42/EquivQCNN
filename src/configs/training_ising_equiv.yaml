@@ -1,0 +1,29 @@
+dataset_params: 
+  data: Ising
+  img_size: 16
+  classes: [0,1]
+  n_data: 10240 
+
+training_params:
+  num_epochs: 100
+  batchsize: 1024
+  loss_type: [BCE_loss, accuracy]
+  
+model_params:  
+  model_type: quantum_classifier
+  num_wires: 8
+  equiv: True
+  trans_inv : True
+  symmetry_breaking: True
+  hybrid: False
+  ver: equiv
+  delta: 0.1
+  
+
+opt_params: 
+  lr: 0.1
+  b1: 0.5
+  b2: 0.999
+  
+logging_params: 
+  save_dir: ../Result/equiv

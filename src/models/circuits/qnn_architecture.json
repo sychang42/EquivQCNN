@@ -1,0 +1,14 @@
+{   
+    "U_TTN" : {
+        "conv_filters" : ["U_TTN"],
+        "pooling" : "Pooling_ansatz"
+    },
+    "U_6" : {
+        "conv_filters" : ["U_6"],
+        "pooling" : "Pooling_ansatz"
+    }, 
+    "U_SO4" : {
+        "conv_filters" : ["U_SO4"],
+        "pooling" : "Pooling_ansatz"
+    }
+} 
