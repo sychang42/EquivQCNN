@@ -14,7 +14,6 @@ model_params:
   num_wires: 8
   equiv: False
   trans_inv : True
-  hybrid: False
   ver: U_6
   delta: 0.1
   

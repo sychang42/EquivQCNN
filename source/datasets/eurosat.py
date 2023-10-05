@@ -1,8 +1,10 @@
 """ 
 EuroSAT dataset loader
-""" 
+"""
+
 import torch
 from torchvision.datasets import ImageFolder
+
 
 def random_split(dataset, ratio=0.9, random_state=None):
     if random_state is not None:
@@ -16,8 +18,10 @@ def random_split(dataset, ratio=0.9, random_state=None):
 
 
 class EuroSAT(ImageFolder):
-    def __init__(self, root='data', transform=None, target_transform=None, download = False):
-        if download : 
+    def __init__(
+        self, root="data", transform=None, target_transform=None, download=False
+    ) -> None:
+        if download:
             self.download(root)
-        
+
         super().__init__(root, transform=transform, target_transform=target_transform)
