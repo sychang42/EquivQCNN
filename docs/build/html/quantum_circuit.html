@@ -42,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Equivariant Quantum Convolutional Neural Networks:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">datasets</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="models.html">models</a><ul class="current">
@@ -95,24 +95,29 @@
              
   <section id="module-quantum_circuit">
 <span id="quantum-circuit-module"></span><h1>quantum_circuit module<a class="headerlink" href="#module-quantum_circuit" title="Link to this heading"></a></h1>
-<p>Construct Quantum circuit for generator</p>
+<p>Construct the quantum circuit for the quantum classifier</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="quantum_circuit.get_quantum_circuit">
 <span class="sig-prename descclassname"><span class="pre">quantum_circuit.</span></span><span class="sig-name descname"><span class="pre">get_quantum_circuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_measured</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equiv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans_inv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/quantum_circuit.html#get_quantum_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quantum_circuit.get_quantum_circuit" title="Link to this definition"></a></dt>
 <dd><p>Load quantum classifier circuit constructed with the given configuration including the final measurement.</p>
-<dl>
-<dt>Args :</dt><dd><p>num_qubits (int) : Number of qubits in the quantum generator.
-num_measured (int) : Number of qubits measured at the end of the quantum circuit.</p>
-<blockquote>
-<div><p>In case of the non-equiv QCNN, num_measured = ceil(log2(num_classes)).
-In case of the EquivQCNN, num_measured = 2*ceil(log2(num_classes)).</p>
-</div></blockquote>
-<p>qnn_config (Union[str, Dict[str, Any]]) : Quantum Circuit configuration for the learning layers.
-equiv (Optional[bool]) : Boolean to indicate whether an equivariant neural network is used.
-trans_inv (Optional[bool]) : Boolean to indicate whether the model is constructed in a translational invariant way.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_qubits</strong> (<em>int</em>) – Number of qubits in the quantum generator.</p></li>
+<li><p><strong>num_measured</strong> (<em>int</em>) – Number of qubits measured at the end of the quantum circuit.
+In case of the non-equiv QCNN, <code class="docutils literal notranslate"><span class="pre">num_measured</span> <span class="pre">=</span> <span class="pre">ceil(log2(num_classes))</span></code>.
+In case of the EquivQCNN, <code class="docutils literal notranslate"><span class="pre">num_measured</span> <span class="pre">=</span> <span class="pre">2*ceil(log2(num_classes))</span></code>.</p></li>
+<li><p><strong>qnn_config</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Quantum Circuit configuration for the learning layers.</p></li>
+<li><p><strong>equiv</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Boolean to indicate whether an equivariant neural network is used.</p></li>
+<li><p><strong>trans_inv</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Boolean to indicate whether the model is constructed in a translational invariant way.</p></li>
+</ul>
 </dd>
-<dt>Return :</dt><dd><p>circuit (Callable) : Quantum generator circuit.
-total_num_params (int) : Total number of parameters required for the generator.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of a Callable representing the quantum classifier circuit, and an int representing
+the total number of parameters required in the quantum circuit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Callable, int]</p>
 </dd>
 </dl>
 </dd></dl>

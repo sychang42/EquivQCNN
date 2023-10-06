@@ -16,6 +16,7 @@
         <script src="_static/documentation_options.js?v=0654038e"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -42,7 +43,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Equivariant Quantum Convolutional Neural Networks:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">datasets</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="models.html">models</a><ul class="current">
@@ -105,26 +106,48 @@
 <span class="sig-name descname"><span class="pre">get_circuit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qcnn.html#EquivQCNN.get_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qcnn.EquivQCNN.get_circuit" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="qcnn.EquivQCNN.qnn_config_path">
-<span class="sig-name descname"><span class="pre">qnn_config_path</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/data/suchang/sy_phd/git_repos/EquivQCNN/src/models/circuits/equiv_qnn_architecture.json'</span></em><a class="headerlink" href="#qcnn.EquivQCNN.qnn_config_path" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="qcnn.QCNN">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qcnn.</span></span><span class="sig-name descname"><span class="pre">QCNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_measured</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans_inv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qcnn.html#QCNN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qcnn.QCNN" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Quantum Convolutional Neural Network constructed with the specified architecture.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_qubits</strong> (<em>int</em>) – Number of qubits in the QCNN.</p></li>
+<li><p><strong>num_measured</strong> (<em>int</em>) – Number of qubits to be measured at the end of the circuit.
+For <span class="math notranslate nohighlight">\(L\)</span> class classification, we measure <code class="docutils literal notranslate"><span class="pre">ceil(log2(num_classes))</span></code> qubits.</p></li>
+<li><p><strong>trans_inv</strong> (<em>bool</em>) – i.e., whether all the filters in each layer share the same parameters. (To be implemented).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>qnn_ver</strong> (<em>str</em>) – Name of the QNN architecture predefined in .</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">qcnn</span> <span class="o">=</span> <span class="n">QCNN</span><span class="p">(</span><span class="n">num_qubits</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">num_measured</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">qnn_ver</span> <span class="o">=</span> <span class="s2">&quot;U_TTN&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qcnn</span> <span class="o">=</span> <span class="n">QCNN</span><span class="p">(</span><span class="n">num_qubits</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">num_measured</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">conv_filters</span> <span class="o">=</span> <span class="s2">&quot;U_TTN&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">pooling</span> <span class="o">=</span> <span class="s2">&quot;Poolin_ansatz1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="qcnn.QCNN.get_circuit">
-<span class="sig-name descname"><span class="pre">get_circuit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/qcnn.html#QCNN.get_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qcnn.QCNN.get_circuit" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="qcnn.QCNN.qnn_config_path">
-<span class="sig-name descname"><span class="pre">qnn_config_path</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/data/suchang/sy_phd/git_repos/EquivQCNN/src/models/circuits/qnn_architecture.json'</span></em><a class="headerlink" href="#qcnn.QCNN.qnn_config_path" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">get_circuit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/qcnn.html#QCNN.get_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#qcnn.QCNN.get_circuit" title="Link to this definition"></a></dt>
+<dd><p>Function to return quantum circuit constructed with the architecture specified for
+the QCNN instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of a Callable representing the quantum circuit
+and a list of integers corresponding to the qubits to be measured at the end of
+the circuit.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple[Callable, List[int]]</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
