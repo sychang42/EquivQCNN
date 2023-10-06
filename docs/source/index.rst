@@ -9,7 +9,7 @@
 .. raw:: html
 
    <div align="center">
-   <h3 align="center">Approximately Equivariant Quantum Neural Network for $p4m Group Symmetries in Images
+   <h3 align="center">Approximately Equivariant Quantum Neural Network for <math>p4m</math> Group Symmetries in Images
    </h3>
      <p align="center">
         Image classification using with an Equivariant Quantum Convolutional Neural Network based on the inherent symmetry of the input dataset. 
@@ -35,12 +35,12 @@ Equivariant QCNN for images
 About the codes
 ---------------
 
-This repository contains code for training an Equivariant Quantum Convolutional Neural Network (QCNN) under $p4m$ group symmetries for image classification tasks. The code is written in `Jax <https://github.com/google/jax>`_ and utilizes `Pennylane <https://github.com/PennyLaneAI/pennylane>`_ for the quantum operations. 
+This repository contains code for training an Equivariant Quantum Convolutional Neural Network (QCNN) under :math:`p4m`` group symmetries for image classification tasks. The code is written in `Jax <https://github.com/google/jax>`_ and utilizes `Pennylane <https://github.com/PennyLaneAI/pennylane>`_ for the quantum operations. 
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Equivariant Quantum Convolutional Neural Networks:
    
    datasets
    models
@@ -102,6 +102,10 @@ The configuration file ``configs/training.yaml`` should be structured as follows
 
   * *save_dir* : Root directory to store the training results. If ``Null``\ , the results will not stored.
 
+.. raw:: html
+
+   <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 Cite
 ----
 
@@ -115,6 +119,10 @@ Cite
          archivePrefix={arXiv},
          primaryClass={quant-ph}
    }
+
+.. raw:: html
+
+   <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 License
 -------
