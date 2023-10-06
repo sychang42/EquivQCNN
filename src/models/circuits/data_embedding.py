@@ -1,4 +1,4 @@
-"""Embedding classical image into quantum circuit"""
+r"""Embedding classical image into quantum circuit"""
 
 import pennylane as qml
 import jax.numpy as jnp
@@ -12,7 +12,7 @@ def embed_image(img: jnp.ndarray, wires: List[int]) -> None:
 
     .. math::
 
-        U(x)|0\ket = \sum_i=1^n x_{i,j} |i\ket |j\ket
+        U(x)\ket{0} = \sum_i=1^n x_{i,j} \ket{i} \ket{j}
 
     Args:
         img (jnp.ndarray) : Image to embed into quantum circuit

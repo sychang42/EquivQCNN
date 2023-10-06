@@ -1,4 +1,4 @@
-"""
+r"""
 Load Classical image datasets.
 Ising, MNIST, FashionMNIST, EMNIST, EuroSAT, Semeion dataset implemented. 
 """
@@ -27,7 +27,20 @@ from eurosat import EuroSAT, random_split
 from semeion import Semeion
 
 
-def load_ising_data(root, L):
+def load_ising_data(root: str, L:int)->Tuple[np.ndarray, np.ndarray]:
+    r"""Load the Ising model spin distribution stored in pickle file into 
+    the numpy array. The pickle file contains the distribution of spins :math:`\{s_i\}_i` in 
+    2 dimensional :math:`L \times L` lattice governed by the Hamiltonian : 
+    
+    ..math: 
+
+        H = -\sum_{\langle i, j \rangle} J s_i s_j.
+
+    Args: 
+        root (str): Root directory where the pickle files for data ``Ising2D_L{L}_T=All.pkl`` and
+            for labels ``Ising2D_L{L}_T=All_labels.pkl`` are located.
+        L (int): Lattice dimension for 2D Ising model. 
+    """
     path = os.path.join(root, "L" + str(L))
     data_path = os.path.join(path, "Ising2D_L" + str(L) + "_T=All.pkl")
     label_path = os.path.join(path, "Ising2D_L" + str(L) + "_T=All_labels.pkl")
@@ -41,24 +54,16 @@ def load_ising_data(root, L):
 def prepare_ising_data(
     data: np.array,
     labels: np.array,
-    dtype: np.dtype = np.float32,
-    test_size: float = 0.2,
-    validation_size: int = 5000,
+    test_size: float = 0.2
 ) -> Tuple[np.ndarray, ...]:
-    """Function to prepare 2D Ising model data in such way that it is trainable with neural
+    r"""Function to prepare 2D Ising model data in such way that it is trainable with neural
     newtork. Code originally taken from `Notebook 12: Identifying Phases in the 2D Ising
     Model with TensorFlow <http://physics.bu.edu/~pankajm/ML-Notebooks/HTML/NB12_CIX-DNN_ising_TFlow.html>`__
 
     Args:
-        data (np.array): _description_
-        labels (np.array): _description_
-        dtype (np.dtype, optional): _description_. Defaults to np.float32.
-        test_size (float, optional): _description_. Defaults to 0.2.
-        validation_size (int, optional): _description_. Defaults to 5000.
-
-    Raises:
-        ValueError: Raise error incase the case that the validation set size is
-        larger than the training set size.
+        data (np.array): Numpy array of Ising spin distribution loaded from ``Ising2D_L{L}_T=All.pkl`` 
+        labels (np.array): Numpy array of Ising spin distribution loaded from ``Ising2D_L{L}_T=All.pkl`` 
+        test_size (float, optional): The ratio of the test set within the whole dataset. Defaults to 0.2.
 
     Returns:
         Tuple[np.ndarray, ...]: Tuple of training and test data/labels.
@@ -67,21 +72,22 @@ def prepare_ising_data(
     X_ordered = data[:70000, :]
     Y_ordered = labels[:70000]
 
-    X_critical = data[70000:100000, :]
-    Y_critical = labels[70000:100000]
+    # X_critical = data[70000:100000, :]
+    # Y_critical = labels[70000:100000]
 
     X_disordered = data[100000:, :]
     Y_disordered = labels[100000:]
 
-    # define training and test data sets
+    # Define training and test data sets. Use only ordered and disordered
+    # phases for binary classification. 
     X = np.concatenate((X_ordered, X_disordered)).astype(
-        dtype
-    )  # np.concatenate((X_ordered,X_critical,X_disordered))
+        np.float32
+    )  
     Y = np.concatenate(
         (Y_ordered, Y_disordered)
-    )  # np.concatenate((Y_ordered,Y_critical,Y_disordered))
+    ) 
 
-    # pick random data points from ordered and disordered states to create the training and test sets
+    # Randomly spilt the ordered and disordered states into the training and test sets
     X_train, X_test, Y_train, Y_test = train_test_split(
         X, Y, test_size=test_size, train_size=1.0 - test_size
     )
@@ -93,8 +99,9 @@ def prepare_ising_data(
             )
         )
 
-    X_validation = X_train[:validation_size]
-    Y_validation = Y_train[:validation_size]
+    validation_size = 5000
+    # X_validation = X_train[:validation_size]
+    # Y_validation = Y_train[:validation_size]
     X_train = X_train[validation_size:]
     Y_train = Y_train[validation_size:]
 
@@ -107,12 +114,11 @@ def prepare_ising_data(
 def preprocess_jnp(
     classes: jnp.ndarray, trainloader: DataLoader, testloader: DataLoader
 ) -> Tuple[jnp.ndarray, ...]:
-    """
-    Load Data from PyTorch DataLoader into JAX NumPy Arrays
+    r"""Load Data from PyTorch DataLoader into JAX NumPy Arrays
 
     Args:
         classes (jnp.ndarray) : List of integers representing data classes to be loaded.
-                                If None, return all classes.
+            If None, return all classes.
         trainloader (torch.utils.data.DataLoader) : Trainset loader.
         testloader (torch.utils.data.DataLoader) : Testset loader.
 
@@ -210,8 +216,8 @@ def get_data(
             "MNIST": torchvision.datasets.MNIST,
             "FashionMNIST": torchvision.datasets.FashionMNIST,
             "EMNIST": torchvision.datasets.EMNIST,
-            "EuroSAT": EuroSAT,
-            "semeion": Semeion,
+            "semeion": torchvision.datasets.Semeion, 
+            "EuroSAT": EuroSAT        
         }
 
         ds = switcher.get(data, lambda: None)

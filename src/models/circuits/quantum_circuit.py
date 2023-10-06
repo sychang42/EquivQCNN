@@ -1,5 +1,5 @@
-"""
-Construct Quantum circuit for generator
+r"""
+Construct the quantum circuit for the quantum classifier
 """
 
 import os
@@ -22,21 +22,20 @@ def get_quantum_circuit(num_qubits : int,
                          trans_inv: Optional[bool] = True, 
                         **kwargs
                          ) -> Tuple[Callable, int]:
-    """
-    Load quantum classifier circuit constructed with the given configuration including the final measurement.
+    r"""Load quantum classifier circuit constructed with the given configuration including the final measurement.
 
-    Args : 
-        num_qubits (int) : Number of qubits in the quantum generator.
-        num_measured (int) : Number of qubits measured at the end of the quantum circuit. 
-                             In case of the non-equiv QCNN, num_measured = ceil(log2(num_classes)).
-                             In case of the EquivQCNN, num_measured = 2*ceil(log2(num_classes)). 
-        qnn_config (Union[str, Dict[str, Any]]) : Quantum Circuit configuration for the learning layers.
-        equiv (Optional[bool]) : Boolean to indicate whether an equivariant neural network is used.
-        trans_inv (Optional[bool]) : Boolean to indicate whether the model is constructed in a translational invariant way.
+    Args: 
+        num_qubits (int): Number of qubits in the quantum generator.
+        num_measured (int): Number of qubits measured at the end of the quantum circuit. 
+            In case of the non-equiv QCNN, ``num_measured = ceil(log2(num_classes))``.
+            In case of the EquivQCNN, ``num_measured = 2*ceil(log2(num_classes))``. 
+        qnn_config (Union[str, Dict[str, Any]]): Quantum Circuit configuration for the learning layers.
+        equiv (Optional[bool]): Boolean to indicate whether an equivariant neural network is used.
+        trans_inv (Optional[bool]): Boolean to indicate whether the model is constructed in a translational invariant way.
 
-    Return : 
-        circuit (Callable) : Quantum generator circuit.
-        total_num_params (int) : Total number of parameters required for the generator. 
+    Returns: 
+        Tuple[Callable, int]: Tuple of a Callable representing the quantum classifier circuit, and an int representing 
+        the total number of parameters required in the quantum circuit.
     """
     
     if equiv: 

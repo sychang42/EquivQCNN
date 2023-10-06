@@ -12,9 +12,29 @@ import unitary
 import equiv_unitary
 from math import ceil
 
-from typing import Tuple, Callable
+from typing import Tuple, Callable, List
 
 class QCNN() : 
+    r"""Quantum Convolutional Neural Network constructed with the specified architecture. 
+
+    Args: 
+        num_qubits (int): Number of qubits in the QCNN. 
+        num_measured (int): Number of qubits to be measured at the end of the circuit.
+            For :math:`L` class classification, we measure ``ceil(log2(num_classes))`` qubits.
+        trans_inv (bool)" Boolean to indicate whether the model is constructed in a translational invariant way,
+            i.e., whether all the filters in each layer share the same parameters. (To be implemented).
+    
+    Keyword Args: 
+        qnn_ver (str): Name of the QNN architecture predefined in . 
+         
+
+    Example:
+
+        >>> qcnn = QCNN(num_qubits = 4, num_measured = 1, qnn_ver = "U_TTN")
+        >>> qcnn = QCNN(num_qubits = 4, num_measured = 1, conv_filters = "U_TTN", 
+        ...         pooling = "Poolin_ansatz1")
+    """
+
     _valid_gates = {
         "RZ" : qml.RZ,
         "U_TTN" : unitary.U_TTN,
@@ -22,7 +42,7 @@ class QCNN() :
         "Pooling_ansatz" : unitary.Pooling_ansatz
     } 
     
-    qnn_config_path = os.path.join(os.path.dirname(__file__), "qnn_architecture.json")
+    _qnn_config_path = os.path.join(os.path.dirname(__file__), "qnn_architecture.json")
     
     
     def __init__(self, 
@@ -35,7 +55,7 @@ class QCNN() :
         qnn_architecture = {'conv_filters' : ['U_TTN'],
                             'pooling' : 'Pooling_ansatz1'} 
         if "qnn_ver" in kwargs.keys() : 
-            qnn_architecture = json.load(open(self.qnn_config_path))[kwargs['qnn_ver']]
+            qnn_architecture = json.load(open(self._qnn_config_path))[kwargs['qnn_ver']]
         else : 
             for k in kwargs.keys() : 
                 qnn_architecture[k] = kwargs[k]
@@ -121,8 +141,15 @@ class QCNN() :
                 
         return circuit
     
-    def get_circuit(self) -> Tuple[Callable, int]:
-                
+    def get_circuit(self) -> Tuple[Callable, List[int]]:
+        r"""Function to return quantum circuit constructed with the architecture specified for
+        the QCNN instance. 
+
+        Returns: 
+            Tuple[Callable, List[int]]: Tuple of a Callable representing the quantum circuit 
+            and a list of integers corresponding to the qubits to be measured at the end of 
+            the circuit.
+        """
         return self._get_circuit(self._num_qubits, self._num_measured, self._conv_filters,
                                  self._pooling), self._meas_wires
     
@@ -143,7 +170,7 @@ class EquivQCNN() :
     } 
     _valid_gates.update(QCNN._valid_gates) 
     
-    qnn_config_path = os.path.join(os.path.dirname(__file__), "equiv_qnn_architecture.json")
+    _qnn_config_path = os.path.join(os.path.dirname(__file__), "equiv_qnn_architecture.json")
     
     
     def __init__(self, 
@@ -158,7 +185,7 @@ class EquivQCNN() :
                             'pooling' : 'equiv_Pooling_ansatz1', 
                              'alternating' : False} 
         if "qnn_ver" in kwargs.keys() : 
-            qnn_architecture = json.load(open(self.qnn_config_path))[kwargs['qnn_ver']]
+            qnn_architecture = json.load(open(self._qnn_config_path))[kwargs['qnn_ver']]
         else : 
             for k in kwargs.keys() : 
                 qnn_architecture[k] = kwargs[k]

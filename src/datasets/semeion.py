@@ -1,4 +1,4 @@
-"""
+r"""
 Semeion handwritten digit dataset.  
 
 Source : 
@@ -16,7 +16,7 @@ from PIL import Image
 
 
 class Semeion(torch.utils.data.Dataset):
-    """Semeion dataset"""
+    r"""Semeion dataset"""
 
     def __init__(self, root="semeion/", train = True, transform=None, download = False,  seed=42):
         """

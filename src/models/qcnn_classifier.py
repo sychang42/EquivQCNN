@@ -28,7 +28,6 @@ class QCNNClassifier(nn.Module):
         delta (float): Range of uniform distribution from which the initial parameters
             are sampled.
     """
-
     circuit: Callable
     num_params: int
     equiv: bool
@@ -46,7 +45,6 @@ class QCNNClassifier(nn.Module):
 
         Returns:
             jnp.ndarray: Initial parameters of shape
-
         """
 
         # Uniform initialization of initial weights
@@ -68,7 +66,6 @@ class QCNNClassifier(nn.Module):
         Returns:
             jnp.ndarray: Quantum Classifier output of shape  ``(batch_size,
             ceil(log2(n_class)))``
-
         """
         qparams = self.param("qparams", self.init_params, self.num_params)
 
