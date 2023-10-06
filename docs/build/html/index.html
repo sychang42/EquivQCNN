@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to Approximately Equivariant QCNN under p4m Group Symmetries for Images’s documentation! &mdash; Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</title>
+  <title>Equivariant QCNN for images &mdash; Approximately Equivariant QCNN under p4m Group Symmetries for Images 19.09.2023 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="About the codes" href="README.html" /> 
+    <link rel="next" title="datasets" href="datasets.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,12 +43,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="README.html">About the codes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#usage">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#cite">Cite</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#license">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#contact">Contact</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.html">src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils module</a></li>
 </ul>
 
         </div>
@@ -65,7 +63,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Welcome to Approximately Equivariant QCNN under p4m Group Symmetries for Images’s documentation!</li>
+      <li class="breadcrumb-item active">Equivariant QCNN for images</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -75,25 +73,124 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="welcome-to-approximately-equivariant-qcnn-under-p4m-group-symmetries-for-images-s-documentation">
-<h1>Welcome to Approximately Equivariant QCNN under p4m Group Symmetries for Images’s documentation!<a class="headerlink" href="#welcome-to-approximately-equivariant-qcnn-under-p4m-group-symmetries-for-images-s-documentation" title="Link to this heading"></a></h1>
+  <p><span class="raw-html-m2r"><!--Back to the top --></span>
+<span class="raw-html-m2r"><a name="readme-top"></a></span></p>
+<div align="center">
+<h3 align="center">Approximately Equivariant Quantum Neural Network for $p4m Group Symmetries in Images
+</h3>
+  <p align="center">
+     Image classification using with an Equivariant Quantum Convolutional Neural Network based on the inherent symmetry of the input dataset.
+    <br />
+    <a href="https://github.com/EquivQCNN/docs"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://arxiv.org/abs/2310.02323">Paper</a>
+    .
+    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    ·
+    <a href="https://github.com/sychang42/EquivQCNN/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/sychang42/EquivQCNN/issues">Request Feature</a>
+  </p>
+</div><section id="equivariant-qcnn-for-images">
+<h1>Equivariant QCNN for images<a class="headerlink" href="#equivariant-qcnn-for-images" title="Link to this heading"></a></h1>
+<section id="about-the-codes">
+<h2>About the codes<a class="headerlink" href="#about-the-codes" title="Link to this heading"></a></h2>
+<p>This repository contains code for training an Equivariant Quantum Convolutional Neural Network (QCNN) under $p4m$ group symmetries for image classification tasks. The code is written in <a class="reference external" href="https://github.com/google/jax">Jax</a> and utilizes <a class="reference external" href="https://github.com/PennyLaneAI/pennylane">Pennylane</a> for the quantum operations.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="README.html">About the codes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#usage">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#cite">Cite</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#license">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#contact">Contact</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.html">src</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="datasets.html">datasets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="models.html">models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="run.html">run module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html">utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dataset.html">dataset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eurosat.html">eurosat module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="semeion.html">semeion module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="circuits.html">circuits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">metrics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_utils.html">model_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qcnn_classifier.html">qcnn_classifier module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="train.html">train module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#utils.initialize_logging"><code class="docutils literal notranslate"><span class="pre">initialize_logging()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </div>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>To train the model, use the following command :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">config</span> <span class="n">config</span><span class="o">/</span><span class="n">training</span><span class="o">.</span><span class="n">yaml</span> <span class="o">--</span><span class="n">gpu</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>The configuration file <code class="docutils literal notranslate"><span class="pre">configs/training.yaml</span></code> should be structured as follows :</p>
+<ul class="simple">
+<li><p><strong>dataset_params</strong>:</p>
+<ul>
+<li><p><em>data</em> : Name of training dataset.</p></li>
+<li><p><em>img_size</em> : Input image size.</p></li>
+<li><p><em>classes</em> : List of integers representing data classes to be trained. Currently, only binary classification is implemented.</p></li>
+<li><p><em>n_data</em> : Number of training samples. Set to <code class="docutils literal notranslate"><span class="pre">Null</span></code> to use the entire dataset.</p></li>
+</ul>
+</li>
+<li><p><strong>training_params</strong>:</p>
+<ul>
+<li><p><em>num_epohcs</em> : Number of training epochs.</p></li>
+<li><p><em>batchsize</em> : Training batch size</p></li>
+<li><p><em>loss_type</em> : Type of loss function used to train the model. Currently, only Binary Cross-Entropy (BCE) loss is implemented.</p></li>
+</ul>
+</li>
+<li><p><strong>model_params</strong>:</p>
+<ul>
+<li><p><em>num_wires</em> : Number of qubits in the quantum classifier.</p></li>
+<li><p><em>equiv</em> : Boolean to indicate whether an equivariant neural network is used.</p></li>
+<li><p><em>trans_inv</em> : Boolean to indicate whether the model is constructed in a translational invariant way.</p></li>
+<li><p><em>ver</em> :  Quantum circuit architecture version.</p></li>
+<li><p><em>symmetry_breaking</em> : Boolean to indicate whether $RZ$ gates at the end of the quantum circuit in case of the <em>EquivQCNN</em>.</p></li>
+<li><p><em>delta</em> : Range of uniform distribution from which the initial parameters are sampled.</p></li>
+</ul>
+</li>
+<li><p><strong>opt_params</strong>:</p>
+<ul>
+<li><p><em>lr</em> : Learning rate.</p></li>
+<li><p><em>b1</em> : $beta_1$ value of the Adam optimizer. 0.9 by default.</p></li>
+<li><p><em>b2</em> : $beta_2$ value of the Adam optimizer. 0.999 by default.</p></li>
+</ul>
+</li>
+<li><p><strong>logging_params</strong>:</p>
+<ul>
+<li><p><em>save_dir</em> : Root directory to store the training results. If <code class="docutils literal notranslate"><span class="pre">Null</span></code>, the results will not stored.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="cite">
+<h2>Cite<a class="headerlink" href="#cite" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>@misc{chang2023approximately,
+      title={Approximately Equivariant Quantum Neural Network for $p4m$ Group Symmetries in Images},
+      author={Su Yeon Chang and Michele Grossi and Bertrand Le Saux and Sofia Vallecorsa},
+      year={2023},
+      eprint={2310.02323},
+      archivePrefix={arXiv},
+      primaryClass={quant-ph}
+}
+</pre></div>
+</div>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>Distributed under the Apache License. See <code class="docutils literal notranslate"><span class="pre">LICENSE.txt</span></code> for more information.</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p></section>
+<section id="contact">
+<h2>Contact<a class="headerlink" href="#contact" title="Link to this heading"></a></h2>
+<p>Su Yeon Chang - <a class="reference external" href="https://twitter.com/SyChang97">&#64;SyChang97</a> - <a class="reference external" href="mailto:su&#46;yeon&#46;chang&#37;&#52;&#48;cern&#46;ch">su<span>&#46;</span>yeon<span>&#46;</span>chang<span>&#64;</span>cern<span>&#46;</span>ch</a></p>
+<p>Project Link: <a class="reference external" href="https://github.com/sychang42/EquivQCNN">https://github.com/sychang42/EquivQCNN</a></p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p></section>
 </section>
 <section id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
@@ -108,7 +205,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="README.html" class="btn btn-neutral float-right" title="About the codes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="datasets.html" class="btn btn-neutral float-right" title="datasets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
